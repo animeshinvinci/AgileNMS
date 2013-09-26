@@ -205,8 +205,8 @@ class TCPPollerResult(PollerResult):
 
 
 class HTTPPollerResult(PollerResult):
-    http_response_time = models.IntegerField("Response time")
-    http_status_code = models.IntegerField("Status code")
+    http_response_time = models.IntegerField("Response time", null=True)
+    http_status_code = models.IntegerField("Status code", null=True)
 
 
 class Problem(models.Model):
