@@ -4,21 +4,20 @@
 
 {% block content %}
 
-<nav class="navbar navbar-default" role="navigation">
+ <div class="navbar navbar-default">
   <div class="navbar-header">
-    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-      <span class="sr-only">Toggle navigation</span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-    </button>
-    <span class="navbar-brand">Checks</span>
+   <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".checks-navbar-collapse">
+    <span class="sr-only">Toggle navigation</span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+   </button>
+   <span class="navbar-brand">Checks</span>
   </div>
-
-  <div class="collapse navbar-collapse navbar-ex1-collapse">
-    <button type="button" class="btn btn-primary navbar-btn navbar-right"><span class="glyphicon glyphicon-plus"></span> New Check</button>
+  <div class="collapse navbar-collapse checks-navbar-collapse">
+   <button type="button" class="btn btn-primary navbar-btn navbar-right"><span class="glyphicon glyphicon-plus"></span> New Check</button>
   </div>
-</nav>
+ </div>
 
  <table class="table">
   <thead>
