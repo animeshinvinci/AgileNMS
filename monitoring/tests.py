@@ -26,3 +26,15 @@ class CheckTestCase(unittest.TestCase):
         results = models.PingPollerResult.objects.filter(check__uuid = ping.uuid)
         self.assertEqual(len(results), 2)
         self.assertEqual(newping.last_result, 2)
+
+    def test_get_child(self):
+        # Create a ping poller
+        ping = models.PingPoller()
+        ping.ping_hostname = "www.test_get_child.com"
+        ping.save()
+        
+        # Get the check for the ping poller
+        check = models.Check.objects.get(uuid=ping.uuid)
+        newping = check.get_child()
+        
+        self.assertEqual(newping.ping_hostname, ping.ping_hostname)

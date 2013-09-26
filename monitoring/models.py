@@ -43,6 +43,13 @@ class Check(models.Model):
         result.maintenance_mode = self.maintenance_mode
         self.save()
 
+    def get_child(self):
+        if hasattr(self, "poller"):
+            return self.poller.get_child()
+        if hasattr(self, "trap"):
+            return self.trap.get_child()
+        return None
+
     def get_absolute_url(self):
         return "".join(["/checks/", self.uuid, "/"])
 
@@ -52,7 +59,15 @@ class Check(models.Model):
 
 class Poller(Check):
     poll_frequency = models.IntegerField(default=600)
-
+    
+    def get_child(self):
+        if hasattr(self, "pingpoller"):
+            return self.pingpoller
+        if hasattr(self, "tcppoller"):
+            return self.tcppoller
+        if hasattr(self, "httppoller"):
+            return self.httppoller
+        return None
 
 class PingPoller(Poller):
     ping_hostname = models.CharField("Hostname", max_length=200)
