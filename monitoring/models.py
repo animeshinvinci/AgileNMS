@@ -170,6 +170,34 @@ class HTTPPoller(Poller):
     http_response_time_warning_threshold = models.IntegerField("Warning Threshold", null=True, blank=True, default=500)
     http_response_time_error_theshold = models.IntegerField("Error Threshold", null=True, blank=True, default=1000)
 
+    def post_result(self, http_response_time, http_status_code, time=timezone.now()):
+        # Create result
+        result = HTTPPollerResult()
+        self.setup_result(result)
+        result.time = time
+
+        # Set values
+        result.http_response_time = http_response_time
+        result.http_status_code = http_status_code
+
+        # Calculate status
+        if result.http_response_time is None:
+            result.status = 3
+        else:
+            if self.http_response_time_error_theshold and result.http_response_time >= self.http_response_time_error_theshold:
+                result.status = 3
+            elif self.http_response_time_warning_threshold and result.http_response_time >= self.http_response_time_warning_threshold:
+                result.status = 2
+            else:
+                result.status = 1
+
+        # If an error status code is recieved, set to down state
+        if result.http_status_code >= 400:
+            result.status = 3
+
+        # Save
+        result.save()
+
     def __unicode__(self):
         return self.http_url
 

@@ -30,5 +30,5 @@ def run_poller(uuid):
         poller.post_result(poll_ping(poller.ping_hostname))
     elif poller.type_name == "TCP Poller":
         poller.post_result(poll_tcp(poller.tcp_hostname, poller.tcp_port))
-    #elif poller.type_name == "HTTP Poller":
-    #    poller.post_result(poll_http(poller.http_url))
+    elif poller.type_name == "HTTP Poller":
+        poller.post_result(poll_http(poller.http_url))
