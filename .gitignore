@@ -1,0 +1,12 @@
+bin
+build
+include
+lib
+local
+celerybeat-schedule
+
+htdocs
+db
+logs
+
+*.pyc

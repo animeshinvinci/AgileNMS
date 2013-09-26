@@ -1,0 +1,14 @@
+Django==1.5.4
+amqp==1.0.13
+anyjson==0.3.3
+argparse==1.2.1
+billiard==2.7.3.32
+celery==3.0.23
+distribute==0.6.34
+dj-database-url==0.2.2
+django-celery==3.0.23
+kombu==2.5.14
+python-dateutil==2.1
+pytz==2013d
+six==1.4.1
+wsgiref==0.1.2
