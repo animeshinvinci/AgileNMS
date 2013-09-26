@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 import uuid
+import datetime
 
 
 class Contact(models.Model):
@@ -45,6 +46,12 @@ class Check(models.Model):
         result.maintenance_mode = self.maintenance_mode
         self.save()
 
+    def get_last_result(self):
+        if self.last_result == 0:
+            return None
+
+        return CheckResult.objects.get(check=self, number=self.last_result)
+
     def get_child(self):
         if hasattr(self, "poller"):
             return self.poller.get_child()
@@ -63,6 +70,16 @@ class Poller(Check):
     type_name = "Poller"
 
     poll_frequency = models.IntegerField(default=600)
+
+    def should_poll(self):
+        last_result = self.get_last_result()
+        if not last_result:
+            return True
+
+        if last_result.time + datetime.timedelta(seconds=self.poll_frequency) < timezone.now():
+            return True
+
+        return False
 
     def get_child(self):
         if hasattr(self, "pingpoller"):

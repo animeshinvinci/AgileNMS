@@ -1,4 +1,5 @@
 import unittest
+import datetime
 import models
 from django.utils import timezone
 
@@ -32,9 +33,23 @@ class CheckTestCase(unittest.TestCase):
         ping = models.PingPoller()
         ping.ping_hostname = "www.test_get_child.com"
         ping.save()
-        
+
         # Get the check for the ping poller
         check = models.Check.objects.get(uuid=ping.uuid)
         newping = check.get_child()
-        
+
         self.assertEqual(newping.ping_hostname, ping.ping_hostname)
+
+    def test_should_poll(self):
+        # Create a ping poller
+        ping = models.PingPoller()
+        ping.ping_hostname = "www.test_should_poll.com"
+        ping.save()
+
+        self.assertEqual(ping.should_poll(), True)
+
+        ping.post_result(100, time=timezone.now() - datetime.timedelta(seconds=ping.poll_frequency + 100))
+        self.assertEqual(ping.should_poll(), True)
+
+        ping.post_result(200, time=timezone.now() - datetime.timedelta(seconds=ping.poll_frequency - 100))
+        self.assertEqual(ping.should_poll(), False)
