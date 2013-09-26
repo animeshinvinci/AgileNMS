@@ -11,7 +11,9 @@ def poll_tcp(hostname, port):
 
 
 def poll_http(url):
-    return None, None
+    import requests
+    result = requests.get(url)
+    return int(result.elapsed.total_seconds() * 1000), result.status_code
 
 
 @task()
@@ -19,16 +21,16 @@ def run_pollers():
     pollers = models.Poller.objects.all()
     for poller in pollers:
         if poller.should_poll():
-            run_poller.delay(poller.uuid)
+            run_poller(poller.get_child())
 
 
-@task()
-def run_poller(uuid):
-    poller = models.Poller.objects.get(uuid=uuid).get_child()
-
+def run_poller(poller):
     if poller.type_name == "Ping Poller":
-        poller.post_result(poll_ping(poller.ping_hostname))
+        ping_response_time = poll_ping(poller.ping_hostname)
+        poller.post_result(ping_response_time)
     elif poller.type_name == "TCP Poller":
-        poller.post_result(poll_tcp(poller.tcp_hostname, poller.tcp_port))
+        tcp_response_time = poll_tcp(poller.tcp_hostname, poller.tcp_port)
+        poller.post_result(tcp_response_time)
     elif poller.type_name == "HTTP Poller":
-        poller.post_result(poll_http(poller.http_url))
+        http_response_time, http_status_code = poll_http(poller.http_url)
+        poller.post_result(http_response_time, http_status_code)
