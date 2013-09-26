@@ -54,7 +54,7 @@ class CheckTestCase(unittest.TestCase):
         ping.post_result(200, time=timezone.now() - datetime.timedelta(seconds=ping.poll_frequency - 100))
         self.assertEqual(ping.should_poll(), False)
 
-    def test_run_pollers(self):
+    def test_run_pollers_task(self):
         # Create some pollers
         uuids = []
         for i in range(1, 10):
