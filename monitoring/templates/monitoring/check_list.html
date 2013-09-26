@@ -3,11 +3,41 @@
 {% block title %}Check List{% endblock %}
 
 {% block content %}
- <h2>Check List</h2>
- 
- <ul id="check_list">
-  {% for check in check_list %}
-   <li><a href="{{ check.get_child.get_absolute_url }}">{{ check.get_child.type_name }}: {{ check.get_child }}</a></li>
-  {% endfor %}
- </ul>
+
+<nav class="navbar navbar-default" role="navigation">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <span class="navbar-brand">Checks</span>
+  </div>
+
+  <div class="collapse navbar-collapse navbar-ex1-collapse">
+    <button type="button" class="btn btn-primary navbar-btn navbar-right"><span class="glyphicon glyphicon-plus"></span> New Check</button>
+  </div>
+</nav>
+
+ <table class="table">
+  <thead>
+   <tr>
+    <th>Name</th>
+    <th>Status</th>
+    <th></th>
+   </tr>
+  </thead>
+   <tbody>
+   {% for check in check_list %}
+    <tr>
+     <td>
+      <a href="{{ check.get_child.get_absolute_url }}">{{ check.get_child.type_name }}: {{ check.get_child }}</a>
+     </td>
+     <td class="text-success"><b>UP</b></td>
+     <td></td>
+    </tr>
+   {% endfor %}
+  </tbody>
+ </table>
 {% endblock %}
