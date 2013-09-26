@@ -90,10 +90,7 @@ class PingPoller(Poller):
     def post_result(self, ping_response_time, time=timezone.now()):
         # Create result
         result = PingPollerResult()
-        self.setup_result(result)
         result.time = time
-
-        # Set values
         result.check = self
         result.maintenance_mode = self.maintenance_mode
         result.ping_response_time = ping_response_time
@@ -127,10 +124,7 @@ class TCPPoller(Poller):
     def post_result(self, tcp_response_time, time=timezone.now()):
         # Create result
         result = TCPPollerResult()
-        self.setup_result(result)
         result.time = time
-
-        # Set values
         result.check = self
         result.maintenance_mode = self.maintenance_mode
         result.tcp_response_time = tcp_response_time
@@ -163,10 +157,7 @@ class HTTPPoller(Poller):
     def post_result(self, http_response_time, http_status_code, time=timezone.now()):
         # Create result
         result = HTTPPollerResult()
-        self.setup_result(result)
         result.time = time
-
-        # Set values
         result.check = self
         result.maintenance_mode = self.maintenance_mode
         result.http_response_time = http_response_time
