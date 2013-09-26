@@ -43,6 +43,9 @@ class Check(models.Model):
         result.maintenance_mode = self.maintenance_mode
         self.save()
 
+    def get_absolute_url(self):
+        return "".join(["/checks/", self.uuid, "/"])
+
     def __unicode__(self):
         return "Check: " + self.uuid
 

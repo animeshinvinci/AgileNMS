@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Check List{% endblock %}
+
+{% block content %}
+ <h2>Check List</h2>
+ 
+ <ul id="check_list">
+  {% for check in check_list %}
+   <li><a href="{{ check.get_absolute_url }}">{{ check }}</a></li>
+  {% endfor %}
+ </ul>
+{% endblock %}
