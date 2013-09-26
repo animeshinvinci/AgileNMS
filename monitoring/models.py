@@ -36,21 +36,15 @@ class Check(models.Model):
     uuid = models.CharField("UUID", max_length=32, primary_key=True, default=lambda: uuid.uuid4().hex)
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
-    last_result = models.IntegerField(default=0)
-    last_problem = models.IntegerField(default=0)
 
     def setup_result(self, result):
-        self.last_result += 1
         result.check = self
-        result.number = self.last_result
         result.maintenance_mode = self.maintenance_mode
         self.save()
 
-    def get_last_result(self):
-        if self.last_result == 0:
-            return None
-
-        return CheckResult.objects.get(check=self, number=self.last_result)
+    def get_recent_results(self, max_age=datetime.timedelta(minutes=10)):
+        min_time = timezone.now() - max_age
+        return CheckResult.objects.filter(check=self, time__gt=min_time)
 
     def get_child(self):
         if hasattr(self, "poller"):
@@ -75,11 +69,8 @@ class Poller(Check):
         if not self.enabled:
             return False
 
-        last_result = self.get_last_result()
-        if not last_result:
-            return True
-
-        if last_result.time + datetime.timedelta(seconds=self.poll_frequency) < timezone.now():
+        # If there havent been any checks since "poll_frequency" seconds ago, return True
+        if len(self.get_recent_results(max_age=datetime.timedelta(seconds=self.poll_frequency))) == 0:
             return True
 
         return False
@@ -204,14 +195,8 @@ class HTTPPoller(Poller):
 
 class CheckResult(models.Model):
     check = models.ForeignKey(Check)
-    number = models.IntegerField()
     time = models.DateTimeField()
     maintenance_mode = models.BooleanField()
-
-    class Meta:
-        unique_together = (
-            ("check", "number"),
-        )
 
 
 class PollerResult(CheckResult):
