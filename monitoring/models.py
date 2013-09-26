@@ -59,7 +59,7 @@ class Check(models.Model):
 
 class Poller(Check):
     poll_frequency = models.IntegerField(default=600)
-    
+
     def get_child(self):
         if hasattr(self, "pingpoller"):
             return self.pingpoller
@@ -102,6 +102,39 @@ class PingPoller(Poller):
         return "Ping " + self.ping_hostname
 
 
+class TCPPoller(Poller):
+    tcp_hostname = models.CharField("Hostname", max_length=200)
+    tcp_port = models.PositiveIntegerField("Port")
+    tcp_response_time_warning_threshold = models.IntegerField("Warning Threshold", null=True, blank=True, default=500)
+    tcp_response_time_error_theshold = models.IntegerField("Error Threshold", null=True, blank=True, default=1000)
+
+    def post_result(self, tcp_response_time, time=timezone.now()):
+        # Create result
+        result = TCPPollerResult()
+        self.setup_result(result)
+        result.time = time
+
+        # Set value
+        result.tcp_response_time = tcp_response_time
+
+        # Calculate status
+        if result.tcp_response_time is None:
+            result.status = 3
+        else:
+            if self.tcp_response_time_error_theshold and result.tcp_response_time >= self.tcp_response_time_error_theshold:
+                result.status = 3
+            elif self.tcp_response_time_warning_threshold and result.tcp_response_time >= self.tcp_response_time_warning_threshold:
+                result.status = 2
+            else:
+                result.status = 1
+
+        # Save
+        result.save()
+
+    def __unicode__(self):
+        return self.tcp_hostname + ":" + str(self.tcp_port)
+
+
 class HTTPPoller(Poller):
     http_url = models.URLField("URL")
     http_response_time_warning_threshold = models.IntegerField("Warning Threshold", null=True, blank=True, default=500)
@@ -135,6 +168,10 @@ class PollerResult(CheckResult):
 
 class PingPollerResult(PollerResult):
     ping_response_time = models.IntegerField("Response time", null=True)
+
+
+class TCPPollerResult(PollerResult):
+    tcp_response_time = models.IntegerField("Response time", null=True)
 
 
 class HTTPPollerResult(PollerResult):
