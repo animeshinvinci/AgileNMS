@@ -72,6 +72,9 @@ class Poller(Check):
     poll_frequency = models.IntegerField(default=600)
 
     def should_poll(self):
+        if not self.enabled:
+            return False
+
         last_result = self.get_last_result()
         if not last_result:
             return True

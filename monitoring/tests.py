@@ -63,6 +63,12 @@ class CheckTestCase(unittest.TestCase):
             poller.save()
             uuids.append(poller.uuid)
 
+        # Create a disabled poller
+        disabled_poller = models.PingPoller()
+        disabled_poller.ping_hostname = "donotpoll"
+        disabled_poller.enabled = False
+        disabled_poller.save()
+
         # Run run_pollers task
         result = tasks.run_pollers.delay()
         result.wait()
@@ -74,3 +80,7 @@ class CheckTestCase(unittest.TestCase):
         for uuid in uuids:
             result_count = models.PingPollerResult.objects.filter(check__uuid=uuid).count()
             self.assertEqual(result_count, 1)
+
+        # Make sure the disabled poller has no results
+        result_count = models.PingPollerResult.objects.filter(check__uuid=disabled_poller.uuid).count()
+        self.assertEqual(result_count, 0)
