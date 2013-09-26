@@ -69,6 +69,7 @@ class Poller(Check):
             return self.httppoller
         return None
 
+
 class PingPoller(Poller):
     ping_hostname = models.CharField("Hostname", max_length=200)
     ping_response_time_warning_threshold = models.IntegerField("Warning Threshold", null=True, blank=True, default=500)

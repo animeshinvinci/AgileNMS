@@ -12,8 +12,8 @@ class CheckTestCase(unittest.TestCase):
         ping.post_result(None)
 
         # Test that everything was saved correctly
-        newping = models.PingPoller.objects.get(uuid = ping.uuid)
-        results = models.PingPollerResult.objects.filter(check__uuid = ping.uuid)
+        newping = models.PingPoller.objects.get(uuid=ping.uuid)
+        results = models.PingPollerResult.objects.filter(check__uuid=ping.uuid)
         self.assertEqual(len(results), 1)
 
         # Some extra checks
@@ -23,7 +23,7 @@ class CheckTestCase(unittest.TestCase):
         self.assertEqual(newping.last_result, 1)
 
         newping.post_result(600)
-        results = models.PingPollerResult.objects.filter(check__uuid = ping.uuid)
+        results = models.PingPollerResult.objects.filter(check__uuid=ping.uuid)
         self.assertEqual(len(results), 2)
         self.assertEqual(newping.last_result, 2)
 
