@@ -30,6 +30,8 @@ class Contact(models.Model):
 
 
 class Check(models.Model):
+    type_name = "Check"
+
     uuid = models.CharField("UUID", max_length=32, primary_key=True, default=lambda: uuid.uuid4().hex)
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
@@ -54,10 +56,12 @@ class Check(models.Model):
         return "".join(["/checks/", self.uuid, "/"])
 
     def __unicode__(self):
-        return "Check: " + self.uuid
+        return self.uuid
 
 
 class Poller(Check):
+    type_name = "Poller"
+
     poll_frequency = models.IntegerField(default=600)
 
     def get_child(self):
@@ -71,6 +75,8 @@ class Poller(Check):
 
 
 class PingPoller(Poller):
+    type_name = "Ping Poller"
+
     ping_hostname = models.CharField("Hostname", max_length=200)
     ping_response_time_warning_threshold = models.IntegerField("Warning Threshold", null=True, blank=True, default=500)
     ping_response_time_error_theshold = models.IntegerField("Error Threshold", null=True, blank=True, default=1000)
@@ -99,10 +105,12 @@ class PingPoller(Poller):
         result.save()
 
     def __unicode__(self):
-        return "Ping " + self.ping_hostname
+        return self.ping_hostname
 
 
 class TCPPoller(Poller):
+    type_name = "TCP Poller"
+
     tcp_hostname = models.CharField("Hostname", max_length=200)
     tcp_port = models.PositiveIntegerField("Port")
     tcp_response_time_warning_threshold = models.IntegerField("Warning Threshold", null=True, blank=True, default=500)
@@ -136,12 +144,14 @@ class TCPPoller(Poller):
 
 
 class HTTPPoller(Poller):
+    type_name = "HTTP Poller"
+
     http_url = models.URLField("URL")
     http_response_time_warning_threshold = models.IntegerField("Warning Threshold", null=True, blank=True, default=500)
     http_response_time_error_theshold = models.IntegerField("Error Threshold", null=True, blank=True, default=1000)
 
     def __unicode__(self):
-        return "URL: " + self.http_url
+        return self.http_url
 
 
 class CheckResult(models.Model):

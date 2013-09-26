@@ -7,7 +7,7 @@
  
  <ul id="check_list">
   {% for check in check_list %}
-   <li><a href="{{ check.get_child.get_absolute_url }}">{{ check.get_child }}</a></li>
+   <li><a href="{{ check.get_child.get_absolute_url }}">{{ check.get_child.type_name }}: {{ check.get_child }}</a></li>
   {% endfor %}
  </ul>
 {% endblock %}
