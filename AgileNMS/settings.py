@@ -113,5 +113,7 @@ LOGGING = {
     }
 }
 
+# CELERY
 import djcelery
 djcelery.setup_loader()
+CELERY_ALWAYS_EAGER = DEBUG
