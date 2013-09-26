@@ -1,6 +1,6 @@
 import unittest
 import datetime
-import models
+import models, tasks
 from django.utils import timezone
 
 
@@ -53,3 +53,24 @@ class CheckTestCase(unittest.TestCase):
 
         ping.post_result(200, time=timezone.now() - datetime.timedelta(seconds=ping.poll_frequency - 100))
         self.assertEqual(ping.should_poll(), False)
+
+    def test_run_pollers(self):
+        # Create some pollers
+        uuids = []
+        for i in range(1, 10):
+            poller = models.PingPoller()
+            poller.ping_hostname = "host" + str(i)
+            poller.save()
+            uuids.append(poller.uuid)
+
+        # Run run_pollers task
+        result = tasks.run_pollers.delay()
+        result.wait()
+
+        # Check the task was successful
+        self.assertEqual(result.successful(), True)
+
+        # Check that a result was inserted for each poller
+        for uuid in uuids:
+            result_count = models.PingPollerResult.objects.filter(check__uuid=uuid).count()
+            self.assertEqual(result_count, 1)
