@@ -37,11 +37,6 @@ class Check(models.Model):
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
 
-    def setup_result(self, result):
-        result.check = self
-        result.maintenance_mode = self.maintenance_mode
-        self.save()
-
     def get_recent_results(self, max_age=datetime.timedelta(minutes=10)):
         min_time = timezone.now() - max_age
         return CheckResult.objects.filter(check=self, time__gt=min_time)
@@ -98,7 +93,9 @@ class PingPoller(Poller):
         self.setup_result(result)
         result.time = time
 
-        # Set value
+        # Set values
+        result.check = self
+        result.maintenance_mode = self.maintenance_mode
         result.ping_response_time = ping_response_time
 
         # Calculate status
@@ -133,7 +130,9 @@ class TCPPoller(Poller):
         self.setup_result(result)
         result.time = time
 
-        # Set value
+        # Set values
+        result.check = self
+        result.maintenance_mode = self.maintenance_mode
         result.tcp_response_time = tcp_response_time
 
         # Calculate status
@@ -168,6 +167,8 @@ class HTTPPoller(Poller):
         result.time = time
 
         # Set values
+        result.check = self
+        result.maintenance_mode = self.maintenance_mode
         result.http_response_time = http_response_time
         result.http_status_code = http_status_code
 
