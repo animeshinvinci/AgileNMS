@@ -3,25 +3,6 @@
 {% block title %}Check Detail{% endblock %}
 
 {% block content %}
-
- <div class="navbar navbar-default">
-  <div class="navbar-header">
-   <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".check-navbar-collapse">
-    <span class="sr-only">Toggle navigation</span>
-    <span class="icon-bar"></span>
-    <span class="icon-bar"></span>
-    <span class="icon-bar"></span>
-   </button>
-   <span class="navbar-brand">{{ check.get_child.type_name }}: {{ check.get_child }}</span>
-  </div>
-  <div class="collapse navbar-collapse check-navbar-collapse">
-   <div class="navbar-right">
-    <button type="button" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-refresh"></span></button>
-    <button type="button" class="btn btn-primary navbar-btn"><span class="glyphicon glyphicon-pencil"></span> Edit</button>
-    <button type="button" class="btn btn-danger navbar-btn"><span class="glyphicon glyphicon-remove"></span> Delete</button>
-   </div>
-  </div>
- </div>
  
  <div class="row">
   <div class="col-lg-9">
@@ -57,11 +38,14 @@
    </div>
   </div>
   <div class="col-lg-3">
+   <button type="button" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-refresh"></span></button>
+   <button type="button" class="btn btn-primary navbar-btn"><span class="glyphicon glyphicon-pencil"></span> Edit</button>
+   <button type="button" class="btn btn-danger navbar-btn"><span class="glyphicon glyphicon-remove"></span> Delete</button>
    <h3>Actions</h3>
-    <div class="btn-group-vertical" style="width: 100%;">
-     <button type="button" class="btn btn-default">Deactivate</button>
-     <button type="button" class="btn btn-default">Enable maintenance mode</button>
-    </div>
+   <div class="btn-group-vertical" style="width: 100%;">
+    <button type="button" class="btn btn-default">Deactivate</button>
+    <button type="button" class="btn btn-default">Enable maintenance mode</button>
+   </div>
   </div>
  </div>
 {% endblock %}
