@@ -71,6 +71,8 @@ class Poller(Check):
         return False
 
     def get_child(self):
+        if hasattr(self, "dummypoller"):
+            return self.dummypoller
         if hasattr(self, "pingpoller"):
             return self.pingpoller
         if hasattr(self, "tcppoller"):
