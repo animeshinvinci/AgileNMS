@@ -32,6 +32,7 @@ class Contact(models.Model):
 
 class Check(models.Model):
     uuid = models.CharField("UUID", max_length=32, primary_key=True, default=lambda: uuid.uuid4().hex)
+    display_name = models.CharField(max_length=100)
     type_name = models.CharField(max_length=100)
     subtype_name = models.CharField(max_length=100)
     enabled = models.BooleanField(default=True)
@@ -52,6 +53,8 @@ class Check(models.Model):
         return "".join(["/checks/", self.uuid, "/"])
 
     def __unicode__(self):
+        if self.display_name:
+            return self.display_name
         return self.uuid
 
 
