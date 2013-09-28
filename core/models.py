@@ -97,6 +97,7 @@ class DummyPoller(Poller):
         # Save
         result.save()
 
+
 class CheckResult(models.Model):
     check = models.ForeignKey(Check)
     time = models.DateTimeField()
@@ -118,6 +119,7 @@ class PollerResult(CheckResult):
 
 class DummyPollerResult(PollerResult):
     value = models.CharField(max_length=200)
+
 
 class Problem(models.Model):
     check = models.ForeignKey(Check)
