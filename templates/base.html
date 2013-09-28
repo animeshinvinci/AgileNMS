@@ -18,8 +18,10 @@
   
   <script src="/static/lib/js/angular.min.js"></script>
   
+  {% block extra_head %}{% endblock %}
+  
  </head>
- <body>
+ <body ng-app>
  <div class="container">
 
    <div class="navbar navbar-inverse navbar-fixed-top">

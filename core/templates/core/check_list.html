@@ -2,6 +2,10 @@
 
 {% block title %}Check List{% endblock %}
 
+{% block extra_head %}
+<script src="/static/core/js/angular_controllers/check_list.js"></script>
+{% endblock %}
+
 {% block content %}
 
  <div class="navbar navbar-default">
@@ -49,24 +53,22 @@
   </div>
  </div>
 
- <table class="table">
+ <table class="table table-striped" ng-controller="CheckListCtrl">
   <thead>
    <tr>
     <th>Name</th>
-    <th>Status</th>
-    <th></th>
+    <th>State</th>
    </tr>
   </thead>
    <tbody>
-   {% for check in check_list %}
-    <tr>
+    {% verbatim %}
+    <tr ng-repeat="check in checks">
      <td>
-      <a href="{{ check.get_child.get_absolute_url }}">{{ check.get_child.type_name }}: {{ check.get_child }}</a>
+      <a href="{{ check.url }}">{{ check.name }}</a>
      </td>
-     <td class="text-success"><b>UP</b></td>
-     <td></td>
+     <td class="{{ check.class }} text-{{ check.class }}"><b>{{ check.state }}</b></td>
     </tr>
-   {% endfor %}
+    {% endverbatim %}
   </tbody>
  </table>
 {% endblock %}
