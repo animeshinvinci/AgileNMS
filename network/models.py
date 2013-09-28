@@ -4,8 +4,6 @@ from core.models import Poller, PollerResult
 
 
 class PingPoller(Poller):
-    type_name = "Ping Poller"
-
     ping_hostname = models.CharField("Hostname", max_length=200)
     ping_response_time_warning_threshold = models.IntegerField("Warning Threshold", null=True, blank=True, default=500)
     ping_response_time_error_theshold = models.IntegerField("Error Threshold", null=True, blank=True, default=1000)
@@ -32,13 +30,15 @@ class PingPoller(Poller):
         # Save
         result.save()
 
+    def save(self, *args, **kwargs):
+        self.subtype_name = "pingpoller"
+        super(DummyPoller, self).save(*args, **kwargs)
+
     def __unicode__(self):
         return self.ping_hostname
 
 
 class TCPPoller(Poller):
-    type_name = "TCP Poller"
-
     tcp_hostname = models.CharField("Hostname", max_length=200)
     tcp_port = models.PositiveIntegerField("Port")
     tcp_response_time_warning_threshold = models.IntegerField("Warning Threshold", null=True, blank=True, default=500)
@@ -66,13 +66,15 @@ class TCPPoller(Poller):
         # Save
         result.save()
 
+    def save(self, *args, **kwargs):
+        self.subtype_name = "tcppoller"
+        super(DummyPoller, self).save(*args, **kwargs)
+
     def __unicode__(self):
         return self.tcp_hostname + ":" + str(self.tcp_port)
 
 
 class HTTPPoller(Poller):
-    type_name = "HTTP Poller"
-
     http_url = models.URLField("URL")
     http_response_time_warning_threshold = models.IntegerField("Warning Threshold", null=True, blank=True, default=500)
     http_response_time_error_theshold = models.IntegerField("Error Threshold", null=True, blank=True, default=1000)
@@ -103,6 +105,10 @@ class HTTPPoller(Poller):
 
         # Save
         result.save()
+
+    def save(self, *args, **kwargs):
+        self.subtype_name = "httppoller"
+        super(DummyPoller, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.http_url

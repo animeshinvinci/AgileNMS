@@ -31,9 +31,9 @@ class Contact(models.Model):
 
 
 class Check(models.Model):
-    type_name = "Check"
-
     uuid = models.CharField("UUID", max_length=32, primary_key=True, default=lambda: uuid.uuid4().hex)
+    type_name = models.CharField(max_length=100)
+    subtype_name = models.CharField(max_length=100)
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
 
@@ -42,10 +42,10 @@ class Check(models.Model):
         return CheckResult.objects.filter(check=self, time__gt=min_time)
 
     def get_child(self):
-        if hasattr(self, "poller"):
-            return self.poller.get_child()
-        if hasattr(self, "trap"):
-            return self.trap.get_child()
+        if hasattr(self, self.type_name):
+            child = getattr(self, self.type_name)
+            if hasattr(child, self.subtype_name):
+                return getattr(child, self.subtype_name)
         return None
 
     def get_absolute_url(self):
@@ -56,8 +56,6 @@ class Check(models.Model):
 
 
 class Poller(Check):
-    type_name = "Poller"
-
     poll_frequency = models.IntegerField(default=600)
 
     def should_poll(self):
@@ -70,20 +68,12 @@ class Poller(Check):
 
         return False
 
-    def get_child(self):
-        if hasattr(self, "dummypoller"):
-            return self.dummypoller
-        if hasattr(self, "pingpoller"):
-            return self.pingpoller
-        if hasattr(self, "tcppoller"):
-            return self.tcppoller
-        if hasattr(self, "httppoller"):
-            return self.httppoller
-        return None
+    def save(self, *args, **kwargs):
+        self.type_name = "poller"
+        super(Poller, self).save(*args, **kwargs)
 
 
 class DummyPoller(Poller):
-    type_name = "Dummy Poller"
     value = models.CharField(max_length=200)
 
     def post_result(self, value, time=timezone.now()):
@@ -96,6 +86,10 @@ class DummyPoller(Poller):
 
         # Save
         result.save()
+
+    def save(self, *args, **kwargs):
+        self.subtype_name = "dummypoller"
+        super(DummyPoller, self).save(*args, **kwargs)
 
 
 class CheckResult(models.Model):
