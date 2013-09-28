@@ -100,6 +100,9 @@ class CheckResult(models.Model):
     time = models.DateTimeField()
     maintenance_mode = models.BooleanField()
 
+    class Meta:
+        ordering = ("-time",)
+
 
 class PollerResult(CheckResult):
     STATUS_CHOICES = (
