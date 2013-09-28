@@ -91,8 +91,7 @@ class DummyPoller(Poller):
         result.save()
 
     def run(self):
-        from tasks import run_dummy_poller
-        run_dummy_poller.delay(self.uuid)
+        self.post_result("Greetings from the dummy poller task :)")
 
     def save(self, *args, **kwargs):
         self.subtype_name = "dummypoller"
