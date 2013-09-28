@@ -106,6 +106,13 @@ class HTTPPoller(Poller):
         # Save
         result.save()
 
+    def run(self):
+        import requests
+        result = requests.get(self.http_url)
+        response_time = int(result.elapsed.total_seconds() * 1000)
+        status_code = result.status_code
+        self.post_result(response_time, status_code)
+
     def save(self, *args, **kwargs):
         self.subtype_name = "httppoller"
         super(HTTPPoller, self).save(*args, **kwargs)
