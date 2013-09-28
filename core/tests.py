@@ -40,3 +40,20 @@ class CheckTestCase(unittest.TestCase):
 
         # Get the value
         self.assertEqual(poller.value, "Hello World!")
+
+    def test_should_poll(self):
+        # Create a dummy poller
+        poller = models.DummyPoller()
+        poller.value = "Hello World!"
+        poller.save()
+
+        # Pollers should poll when they have no results
+        self.assertEqual(poller.should_poll(), True)
+
+        # Pollers should poll when their latest result is too old
+        poller.post_result("I'm too old", time=(timezone.now() - datetime.timedelta(seconds=poller.poll_frequency + 100)))
+        self.assertEqual(poller.should_poll(), True)
+
+        # Pollers should not poll when their latest result is new
+        poller.post_result("I'm new!", time=(timezone.now() + datetime.timedelta(seconds=poller.poll_frequency + 100)))
+        self.assertEqual(poller.should_poll(), False)
