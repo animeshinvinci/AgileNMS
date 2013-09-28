@@ -80,6 +80,21 @@ class Poller(Check):
         return None
 
 
+class DummyPoller(Poller):
+    type_name = "Dummy Poller"
+    value = models.CharField(max_length=200)
+
+    def post_result(self, value, time=timezone.now()):
+        # Create result
+        result = DummyPollerResult()
+        result.time = time
+        result.check = self
+        result.maintenance_mode = self.maintenance_mode
+        result.value = value
+
+        # Save
+        result.save()
+
 class CheckResult(models.Model):
     check = models.ForeignKey(Check)
     time = models.DateTimeField()
@@ -95,6 +110,9 @@ class PollerResult(CheckResult):
 
     status = models.IntegerField(null=True, blank=True, choices=STATUS_CHOICES)
 
+
+class DummyPollerResult(PollerResult):
+    value = models.CharField(max_length=200)
 
 class Problem(models.Model):
     check = models.ForeignKey(Check)
