@@ -1,12 +1,12 @@
-bin
-build
-include
-lib
-local
-celerybeat-schedule
+/bin
+/build
+/include
+/lib
+/local
+/celerybeat-schedule
 
-htdocs
-db
-logs
+/htdocs
+/db
+/logs
 
 *.pyc
