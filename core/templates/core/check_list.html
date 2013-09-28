@@ -58,6 +58,7 @@
    <tr>
     <th>Name</th>
     <th>State</th>
+    <th></th>
    </tr>
   </thead>
    <tbody>
@@ -66,7 +67,8 @@
      <td>
       <a href="{{ check.url }}">{{ check.name }}</a>
      </td>
-     <td class="{{ check.class }} text-{{ check.class }}"><b>{{ check.state }}</b></td>
+     <td style="text-transform: uppercase" class="{{ check.class }} text-{{ check.class }}"><b>{{ check.state }}</b></td>
+     <td style="text-transform: uppercase" class="{{ check.class }} text-{{ check.class }}"><b>{{ check.data }}</b></td>
     </tr>
     {% endverbatim %}
   </tbody>
