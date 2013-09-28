@@ -57,3 +57,19 @@ class CheckTestCase(unittest.TestCase):
         # Pollers should not poll when their latest result is new
         poller.post_result("I'm new!", time=(timezone.now() + datetime.timedelta(seconds=poller.poll_frequency + 100)))
         self.assertEqual(poller.should_poll(), False)
+
+    def test_run_pollers_task(self):
+        # Create a dummy poller
+        poller = models.DummyPoller()
+        poller.value = "Hello World!"
+        poller.save()
+
+        # Run the run pollers task
+        tasks.run_pollers.delay()
+
+        # Check for result
+        results = models.DummyPollerResult.objects.filter(check__uuid=poller.uuid)
+        self.assertEqual(len(results), 1)
+
+        # Check that result was from the from the dummy poller task
+        self.assertEqual(results[0].value, "Greetings from the dummy poller task :)")

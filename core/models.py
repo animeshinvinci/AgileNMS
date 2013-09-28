@@ -68,6 +68,9 @@ class Poller(Check):
 
         return False
 
+    def run(self):
+        return
+
     def save(self, *args, **kwargs):
         self.type_name = "poller"
         super(Poller, self).save(*args, **kwargs)
@@ -86,6 +89,10 @@ class DummyPoller(Poller):
 
         # Save
         result.save()
+
+    def run(self):
+        from tasks import run_dummy_poller
+        run_dummy_poller.delay(self.uuid)
 
     def save(self, *args, **kwargs):
         self.subtype_name = "dummypoller"
