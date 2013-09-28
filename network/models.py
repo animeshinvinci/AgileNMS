@@ -32,7 +32,7 @@ class PingPoller(Poller):
 
     def save(self, *args, **kwargs):
         self.subtype_name = "pingpoller"
-        super(DummyPoller, self).save(*args, **kwargs)
+        super(PingPoller, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.ping_hostname
@@ -68,7 +68,7 @@ class TCPPoller(Poller):
 
     def save(self, *args, **kwargs):
         self.subtype_name = "tcppoller"
-        super(DummyPoller, self).save(*args, **kwargs)
+        super(TCPPoller, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.tcp_hostname + ":" + str(self.tcp_port)
@@ -108,7 +108,7 @@ class HTTPPoller(Poller):
 
     def save(self, *args, **kwargs):
         self.subtype_name = "httppoller"
-        super(DummyPoller, self).save(*args, **kwargs)
+        super(HTTPPoller, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.http_url
