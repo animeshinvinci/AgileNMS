@@ -26,6 +26,26 @@ class CheckTestCase(unittest.TestCase):
         # Last result must be first in the list
         self.assertEqual(results[0].value, "bar")
 
+    def test_get_recent_results(self):
+        # Create a dummy poller
+        poller = models.DummyPoller()
+        poller.value = "Hello World!"
+        poller.save()
+
+        # Post some results, make sure that they post at different times
+        poller.post_result("foo", time=(timezone.now() - datetime.timedelta(minutes=1)))
+        poller.post_result("bar")
+        poller.post_result("baz", time=(timezone.now() - datetime.timedelta(hours=1)))
+
+        # Get the results
+        results = poller.get_recent_results()
+
+        # Bar should be first in list then foo. Baz shouldnt be in this list as it is too old
+        # This tests result get child
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0].get_child().value, "bar")
+        self.assertEqual(results[1].get_child().value, "foo")
+
     def test_get_child(self):
         # Create a dummy poller
         newpoller = models.DummyPoller()
@@ -52,6 +72,12 @@ class CheckTestCase(unittest.TestCase):
 
         # Pollers should poll when their latest result is too old
         poller.post_result("I'm too old", time=(timezone.now() - datetime.timedelta(seconds=poller.poll_frequency + 100)))
+        self.assertEqual(poller.should_poll(), True)
+
+        # Pollers should not poll when they are disabled
+        poller.enabled = False
+        self.assertEqual(poller.should_poll(), False)
+        poller.enabled = True
         self.assertEqual(poller.should_poll(), True)
 
         # Pollers should not poll when their latest result is new
