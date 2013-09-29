@@ -46,7 +46,7 @@ class Check(models.Model):
         # Create result
         result = self.get_child().__class__.result_class()
         result.time = time
-        result.check = self
+        result.check = self.get_child()
         result.maintenance_mode = self.maintenance_mode
         result.setup(data)
 
