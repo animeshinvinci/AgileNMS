@@ -42,6 +42,17 @@ class Check(models.Model):
         min_time = timezone.now() - max_age
         return CheckResult.objects.filter(check=self, time__gt=min_time)
 
+    def post_result(self, data=None, time=timezone.now()):
+        # Create result
+        result = self.get_child().__class__.result_class()
+        result.time = time
+        result.check = self
+        result.maintenance_mode = self.maintenance_mode
+        result.setup(data)
+
+        # Save
+        result.save()
+
     def get_child(self):
         # Split class_name into list of class names
         class_names = self.class_name.split(".")
@@ -135,30 +146,22 @@ class Poller(Check):
 class DummyPoller(Poller):
     value = models.CharField(max_length=200)
 
-    def post_result(self, value, time=timezone.now()):
-        # Create result
-        result = DummyPollerResult()
-        result.time = time
-        result.check = self
-        result.maintenance_mode = self.maintenance_mode
-        result.value = value
-
-        # Save
-        result.save()
-
     def run(self):
         self.post_result("Greetings from the dummy poller task :)")
-        
-        
+
+
 class CheckResult(models.Model):
     uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
     check = models.ForeignKey(Check)
     time = models.DateTimeField()
     maintenance_mode = models.BooleanField()
 
+    def setup(self, data):
+        pass
+
     def get_child(self):
         # Split result_class_name into list of class names
-        class_names = self.result_class_name.split(".")
+        class_names = self.check.result_class_name.split(".")
 
         # Traverse through each class to find the bottom object
         current_object = self
@@ -180,18 +183,15 @@ Check.result_class = CheckResult
 
 
 class PollerResult(CheckResult):
-    STATUS_CHOICES = (
-        (1, "UP"),
-        (2, "WARNING"),
-        (3, "DOWN"),
-    )
-
-    status = models.IntegerField(null=True, blank=True, choices=STATUS_CHOICES)
+    pass
 Poller.result_class = PollerResult
 
 
 class DummyPollerResult(PollerResult):
     value = models.CharField(max_length=200)
+
+    def setup(self, data):
+        self.value = data
 DummyPoller.result_class = DummyPollerResult
 
 
