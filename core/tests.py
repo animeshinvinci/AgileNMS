@@ -14,6 +14,7 @@ class CheckTestCase(unittest.TestCase):
         # Check that the poller saved correctly
         poller = models.DummyPoller.objects.get(uuid=newpoller.uuid)
         self.assertEqual(poller.value, "Hello World!")
+        self.assertEqual(poller.type_name, "poller.dummypoller")
 
         # Post some results, make sure that they post at different times
         poller.post_result("foo", time=(timezone.now() - datetime.timedelta(minutes=1)))

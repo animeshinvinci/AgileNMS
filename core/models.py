@@ -34,7 +34,6 @@ class Check(models.Model):
     uuid = models.CharField("UUID", max_length=32, primary_key=True, default=lambda: uuid.uuid4().hex)
     display_name = models.CharField(max_length=100)
     type_name = models.CharField(max_length=100)
-    subtype_name = models.CharField(max_length=100)
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
 
@@ -43,11 +42,43 @@ class Check(models.Model):
         return CheckResult.objects.filter(check=self, time__gt=min_time)
 
     def get_child(self):
-        if hasattr(self, self.type_name):
-            child = getattr(self, self.type_name)
-            if hasattr(child, self.subtype_name):
-                return getattr(child, self.subtype_name)
-        return None
+        # Split type_name into list of class names
+        type_names = self.type_name.split(".")
+
+        # Traverse through each class to find the bottom class
+        current_object = self
+        for type_name in type_names:
+            if hasattr(current_object, type_name):
+                current_object = getattr(current_object, type_name)
+
+        # Return
+        return current_object
+
+    def get_type_name(self):
+        type_names = []
+        current_type = self.__class__
+
+        # Keep going until we reach the type class
+        while current_type != Check:
+            # Add current class to class list
+            type_names.append(current_type._meta.module_name)
+
+            # Find the next type name
+            for next_type in current_type.__bases__:
+                if issubclass(next_type, Check):
+                    current_type = next_type
+                    break
+
+        # Reverse type list
+        type_names.reverse()
+
+        # Convert type list into single string and return it
+        return ".".join(type_names)
+
+    def save(self, *args, **kwargs):
+        if not self.type_name:
+            self.type_name = self.get_type_name()
+        super(Check, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         return "".join(["/checks/", self.uuid, "/"])
@@ -74,10 +105,6 @@ class Poller(Check):
     def run(self):
         return
 
-    def save(self, *args, **kwargs):
-        self.type_name = "poller"
-        super(Poller, self).save(*args, **kwargs)
-
 
 class DummyPoller(Poller):
     value = models.CharField(max_length=200)
@@ -96,10 +123,6 @@ class DummyPoller(Poller):
     def run(self):
         self.post_result("Greetings from the dummy poller task :)")
 
-    def save(self, *args, **kwargs):
-        self.subtype_name = "dummypoller"
-        super(DummyPoller, self).save(*args, **kwargs)
-
 
 class CheckResult(models.Model):
     uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
@@ -108,12 +131,17 @@ class CheckResult(models.Model):
     maintenance_mode = models.BooleanField()
 
     def get_child(self):
-        type_name = self.check.type_name + "result"
-        subtype_name = self.check.subtype_name + "result"
-        if hasattr(self, type_name):
-            child = getattr(self, type_name)
-            if hasattr(child, subtype_name):
-                return getattr(child, subtype_name)
+        # Split type_name into list of class names
+        type_names = self.check.type_name.split(".")
+
+        # Traverse through each class to find the bottom class
+        current_object = self
+        for type_name in type_names:
+            if hasattr(current_object, type_name + "result"):
+                current_object = getattr(current_object, type_name + "result")
+
+        # Return
+        return current_object
 
     def save(self, *args, **kwargs):
         if self.check and self.time:
