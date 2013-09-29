@@ -30,10 +30,53 @@ class Contact(models.Model):
         return "".join(name_parts)
 
 
+class CheckResult(models.Model):
+    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
+    check = models.ForeignKey("Check")
+    time = models.DateTimeField()
+    maintenance_mode = models.BooleanField()
+
+    def get_child(self):
+        # Split type_name into list of type names
+        type_names = self.check.result_type_name.split(".")
+
+        # Traverse through each type to find the bottom object
+        current_object = self
+        for type_name in type_names:
+            if hasattr(current_object, type_name):
+                current_object = getattr(current_object, type_name)
+
+        # Return
+        return current_object
+
+    def save(self, *args, **kwargs):
+        if self.check and self.time:
+            self.uuid = uuid.uuid5(uuid.UUID(hex=self.check.uuid), str(self.time)).hex
+        super(CheckResult, self).save(*args, **kwargs)
+
+    class Meta:
+        ordering = ("-time",)
+
+
+class PollerResult(CheckResult):
+    STATUS_CHOICES = (
+        (1, "UP"),
+        (2, "WARNING"),
+        (3, "DOWN"),
+    )
+
+    status = models.IntegerField(null=True, blank=True, choices=STATUS_CHOICES)
+
+
+class DummyPollerResult(PollerResult):
+    value = models.CharField(max_length=200)
+
+
 class Check(models.Model):
     uuid = models.CharField("UUID", max_length=32, primary_key=True, default=lambda: uuid.uuid4().hex)
     display_name = models.CharField(max_length=100)
     type_name = models.CharField(max_length=100)
+    result_type_name = models.CharField(max_length=100)
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
 
@@ -42,10 +85,10 @@ class Check(models.Model):
         return CheckResult.objects.filter(check=self, time__gt=min_time)
 
     def get_child(self):
-        # Split type_name into list of class names
+        # Split type_name into list of type names
         type_names = self.type_name.split(".")
 
-        # Traverse through each class to find the bottom class
+        # Traverse through each type to find the bottom object
         current_object = self
         for type_name in type_names:
             if hasattr(current_object, type_name):
@@ -75,9 +118,32 @@ class Check(models.Model):
         # Convert type list into single string and return it
         return ".".join(type_names)
 
+    def get_result_type_name(self):
+        type_names = []
+        current_type = self.__class__.result_class
+
+        # Keep going until we reach the type class
+        while current_type != CheckResult:
+            # Add current class to class list
+            type_names.append(current_type._meta.module_name)
+
+            # Find the next type name
+            for next_type in current_type.__bases__:
+                if issubclass(next_type, CheckResult):
+                    current_type = next_type
+                    break
+
+        # Reverse type list
+        type_names.reverse()
+
+        # Convert type list into single string and return it
+        return ".".join(type_names)
+
     def save(self, *args, **kwargs):
         if not self.type_name:
             self.type_name = self.get_type_name()
+        if not self.result_type_name:
+            self.result_type_name = self.get_result_type_name()
         super(Check, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
@@ -90,6 +156,8 @@ class Check(models.Model):
 
 
 class Poller(Check):
+    result_class = PollerResult
+
     poll_frequency = models.IntegerField(default=600)
 
     def should_poll(self):
@@ -107,6 +175,8 @@ class Poller(Check):
 
 
 class DummyPoller(Poller):
+    result_class = DummyPollerResult
+
     value = models.CharField(max_length=200)
 
     def post_result(self, value, time=timezone.now()):
@@ -122,48 +192,6 @@ class DummyPoller(Poller):
 
     def run(self):
         self.post_result("Greetings from the dummy poller task :)")
-
-
-class CheckResult(models.Model):
-    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
-    check = models.ForeignKey(Check)
-    time = models.DateTimeField()
-    maintenance_mode = models.BooleanField()
-
-    def get_child(self):
-        # Split type_name into list of class names
-        type_names = self.check.type_name.split(".")
-
-        # Traverse through each class to find the bottom class
-        current_object = self
-        for type_name in type_names:
-            if hasattr(current_object, type_name + "result"):
-                current_object = getattr(current_object, type_name + "result")
-
-        # Return
-        return current_object
-
-    def save(self, *args, **kwargs):
-        if self.check and self.time:
-            self.uuid = uuid.uuid5(uuid.UUID(hex=self.check.uuid), str(self.time)).hex
-        super(CheckResult, self).save(*args, **kwargs)
-
-    class Meta:
-        ordering = ("-time",)
-
-
-class PollerResult(CheckResult):
-    STATUS_CHOICES = (
-        (1, "UP"),
-        (2, "WARNING"),
-        (3, "DOWN"),
-    )
-
-    status = models.IntegerField(null=True, blank=True, choices=STATUS_CHOICES)
-
-
-class DummyPollerResult(PollerResult):
-    value = models.CharField(max_length=200)
 
 
 class Problem(models.Model):
