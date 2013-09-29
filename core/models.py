@@ -107,6 +107,14 @@ class CheckResult(models.Model):
     time = models.DateTimeField()
     maintenance_mode = models.BooleanField()
 
+    def get_child(self):
+        type_name = self.check.type_name + "result"
+        subtype_name = self.check.subtype_name + "result"
+        if hasattr(self, type_name):
+            child = getattr(self, type_name)
+            if hasattr(child, subtype_name):
+                return getattr(child, subtype_name)
+
     def save(self, *args, **kwargs):
         if self.check and self.time:
             self.uuid = uuid.uuid5(uuid.UUID(hex=self.check.uuid), str(self.time)).hex
