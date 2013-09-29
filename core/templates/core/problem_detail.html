@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Check Detail{% endblock %}
+
+{% block content %}
+ 
+ <div class="row">
+  <div class="col-lg-9">
+   <h2>Basic info</h2>
+   <p>Blah blah blah blah blah</p>
+  </div>
+  <div class="col-lg-3">
+   <button type="button" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-refresh"></span></button>
+   <button type="button" class="btn btn-danger navbar-btn"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+   <h3>Actions</h3>
+   <div class="btn-group-vertical" style="width: 100%;">
+    <button type="button" class="btn btn-default">Acknowledge</button>
+    <button type="button" class="btn btn-default">Resolved</button>
+   </div>
+  </div>
+ </div>
+{% endblock %}

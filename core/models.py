@@ -125,11 +125,15 @@ class DummyPollerResult(PollerResult):
 
 
 class Problem(models.Model):
+    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
     check = models.ForeignKey(Check)
-    number = models.IntegerField()
-    start_date = models.DateTimeField()
-    acknowledge_date = models.DateTimeField(null=True, blank=True)
-    resolved_date = models.DateTimeField(null=True, blank=True)
-    result_number = models.IntegerField(null=True, blank=True)
+    start_time = models.DateTimeField()
+    acknowledge_time = models.DateTimeField(null=True, blank=True)
+    resolved_time = models.DateTimeField(null=True, blank=True)
     summary = models.TextField(max_length=200)
     details = models.TextField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.check and self.start_time:
+            self.uuid = uuid.uuid5(uuid.UUID(hex=self.check.uuid), str(self.start_time)).hex
+        super(Problem, self).save(*args, **kwargs)
