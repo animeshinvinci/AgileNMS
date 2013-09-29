@@ -3,22 +3,7 @@ from django.utils import timezone
 from core.models import Poller, PollerResult
 
 
-class PingPollerResult(PollerResult):
-    ping_response_time = models.IntegerField("Response time", null=True)
-
-
-class TCPPollerResult(PollerResult):
-    tcp_response_time = models.IntegerField("Response time", null=True)
-
-
-class HTTPPollerResult(PollerResult):
-    http_response_time = models.IntegerField("Response time", null=True)
-    http_status_code = models.IntegerField("Status code", null=True)
-
-
 class PingPoller(Poller):
-    result_class = PingPollerResult
-
     ping_hostname = models.CharField("Hostname", max_length=200)
     ping_response_time_warning_threshold = models.IntegerField("Warning Threshold", null=True, blank=True, default=500)
     ping_response_time_error_theshold = models.IntegerField("Error Threshold", null=True, blank=True, default=1000)
@@ -50,8 +35,6 @@ class PingPoller(Poller):
 
 
 class TCPPoller(Poller):
-    result_class = TCPPollerResult
-
     tcp_hostname = models.CharField("Hostname", max_length=200)
     tcp_port = models.PositiveIntegerField("Port")
     tcp_response_time_warning_threshold = models.IntegerField("Warning Threshold", null=True, blank=True, default=500)
@@ -84,8 +67,6 @@ class TCPPoller(Poller):
 
 
 class HTTPPoller(Poller):
-    result_class = HTTPPollerResult
-
     http_url = models.URLField("URL")
     http_response_time_warning_threshold = models.IntegerField("Warning Threshold", null=True, blank=True, default=500)
     http_response_time_error_theshold = models.IntegerField("Error Threshold", null=True, blank=True, default=1000)
@@ -126,3 +107,19 @@ class HTTPPoller(Poller):
 
     def __unicode__(self):
         return self.http_url
+
+
+class PingPollerResult(PollerResult):
+    ping_response_time = models.IntegerField("Response time", null=True)
+PingPoller.result_class = PingPollerResult
+
+
+class TCPPollerResult(PollerResult):
+    tcp_response_time = models.IntegerField("Response time", null=True)
+TCPPoller.result_class = TCPPollerResult
+
+
+class HTTPPollerResult(PollerResult):
+    http_response_time = models.IntegerField("Response time", null=True)
+    http_status_code = models.IntegerField("Status code", null=True)
+HTTPPoller.result_class = HTTPPollerResult
