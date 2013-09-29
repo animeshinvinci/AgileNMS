@@ -102,9 +102,15 @@ class DummyPoller(Poller):
 
 
 class CheckResult(models.Model):
+    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
     check = models.ForeignKey(Check)
     time = models.DateTimeField()
     maintenance_mode = models.BooleanField()
+
+    def save(self, *args, **kwargs):
+        if self.check and self.time:
+            self.uuid = uuid.uuid5(uuid.UUID(hex=self.check.uuid), str(self.time)).hex
+        super(CheckResult, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ("-time",)
