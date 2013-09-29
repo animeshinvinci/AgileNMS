@@ -33,8 +33,8 @@ class Contact(models.Model):
 class Check(models.Model):
     uuid = models.CharField("UUID", max_length=32, primary_key=True, default=lambda: uuid.uuid4().hex)
     display_name = models.CharField(max_length=100)
-    type_name = models.CharField(max_length=100)
-    result_type_name = models.CharField(max_length=100)
+    class_name = models.CharField(max_length=100)
+    result_class_name = models.CharField(max_length=100)
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
 
@@ -43,65 +43,67 @@ class Check(models.Model):
         return CheckResult.objects.filter(check=self, time__gt=min_time)
 
     def get_child(self):
-        # Split type_name into list of type names
-        type_names = self.type_name.split(".")
+        # Split class_name into list of class names
+        class_names = self.class_name.split(".")
 
-        # Traverse through each type to find the bottom object
+        # Traverse through each class to find the bottom object
         current_object = self
-        for type_name in type_names:
-            if hasattr(current_object, type_name):
-                current_object = getattr(current_object, type_name)
+        for class_name in class_names:
+            if hasattr(current_object, class_name):
+                current_object = getattr(current_object, class_name)
 
         # Return
         return current_object
 
-    def get_type_name(self):
-        type_names = []
-        current_type = self.__class__
+    def get_class_name(self):
+        class_names = []
+        current_class = self.__class__
 
-        # Keep going until we reach the type class
-        while current_type != Check:
+        # Keep going until we reach the Check class
+        while current_class != Check:
             # Add current class to class list
-            type_names.append(current_type._meta.module_name)
+            class_names.append(current_class._meta.module_name)
 
-            # Find the next type name
-            for next_type in current_type.__bases__:
-                if issubclass(next_type, Check):
-                    current_type = next_type
+            # Find the next class
+            for next_class in current_class.__bases__:
+                # Make sure the next class is a sub class of Check
+                if issubclass(next_class, Check):
+                    current_class = next_class
                     break
 
-        # Reverse type list
-        type_names.reverse()
+        # Reverse class list
+        class_names.reverse()
 
-        # Convert type list into single string and return it
-        return ".".join(type_names)
+        # Convert class list into single string and return it
+        return ".".join(class_names)
 
-    def get_result_type_name(self):
-        type_names = []
-        current_type = self.__class__.result_class
+    def get_result_class_name(self):
+        class_names = []
+        current_class = self.__class__.result_class
 
-        # Keep going until we reach the type class
-        while current_type != CheckResult:
+        # Keep going until we reach the Check class
+        while current_class != CheckResult:
             # Add current class to class list
-            type_names.append(current_type._meta.module_name)
+            class_names.append(current_class._meta.module_name)
 
-            # Find the next type name
-            for next_type in current_type.__bases__:
-                if issubclass(next_type, CheckResult):
-                    current_type = next_type
+            # Find the next class
+            for next_class in current_class.__bases__:
+                # Make sure the next class is a sub class of Check
+                if issubclass(next_class, CheckResult):
+                    current_class = next_class
                     break
 
-        # Reverse type list
-        type_names.reverse()
+        # Reverse class list
+        class_names.reverse()
 
-        # Convert type list into single string and return it
-        return ".".join(type_names)
+        # Convert class list into single string and return it
+        return ".".join(class_names)
 
     def save(self, *args, **kwargs):
-        if not self.type_name:
-            self.type_name = self.get_type_name()
-        if not self.result_type_name:
-            self.result_type_name = self.get_result_type_name()
+        if not self.class_name:
+            self.class_name = self.get_class_name()
+        if not self.result_class_name:
+            self.result_class_name = self.get_result_class_name()
         super(Check, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
@@ -155,14 +157,14 @@ class CheckResult(models.Model):
     maintenance_mode = models.BooleanField()
 
     def get_child(self):
-        # Split type_name into list of type names
-        type_names = self.check.result_type_name.split(".")
+        # Split result_class_name into list of class names
+        class_names = self.result_class_name.split(".")
 
-        # Traverse through each type to find the bottom object
+        # Traverse through each class to find the bottom object
         current_object = self
-        for type_name in type_names:
-            if hasattr(current_object, type_name):
-                current_object = getattr(current_object, type_name)
+        for class_name in class_names:
+            if hasattr(current_object, class_name):
+                current_object = getattr(current_object, class_name)
 
         # Return
         return current_object
