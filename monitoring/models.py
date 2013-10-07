@@ -4,32 +4,6 @@ import uuid
 import datetime
 
 
-class Contact(models.Model):
-    first_name = models.CharField(max_length=100, blank=True, null=True)
-    last_name = models.CharField(max_length=100, blank=True, null=True)
-    nickname = models.CharField(max_length=100, blank=True, null=True)
-    email = models.EmailField()
-
-    def __unicode__(self):
-        name_parts = []
-
-        # First name
-        if self.first_name:
-            name_parts.append(self.first_name)
-            name_parts.append(" ")
-
-            # Last name
-            if self.last_name:
-                name_parts.append(self.last_name)
-                name_parts.append(" ")
-
-        # Email
-        name_parts.extend(["<", self.email, ">"])
-
-        # Join everything and return
-        return "".join(name_parts)
-
-
 class Check(models.Model):
     uuid = models.CharField("UUID", max_length=32, primary_key=True, default=lambda: uuid.uuid4().hex)
     display_name = models.CharField(max_length=100)
