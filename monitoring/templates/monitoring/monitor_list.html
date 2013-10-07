@@ -57,8 +57,7 @@
   <thead>
    <tr>
     <th>Name</th>
-    <th>State</th>
-    <th></th>
+    <th colspan="2">State</th>
    </tr>
   </thead>
    <tbody>
@@ -67,8 +66,17 @@
      <td>
       <a href="{{ monitor.url }}">{{ monitor.name }}</a>
      </td>
-     <td style="text-transform: uppercase" class="{{ monitor.class }} text-{{ monitor.class }}"><b>{{ monitor.state }}</b></td>
-     <td style="text-transform: uppercase" class="{{ monitor.class }} text-{{ monitor.class }}"><b>{{ monitor.data }}</b></td>
+     <td style="text-transform: uppercase"><b>
+      <span class="text-{{ monitor.class }}">{{ monitor.state }}</span>
+     <td style="text-transform: uppercase">
+      <b>
+       <a href="{{ monitor.url }}checks/ok/" class="label label-success">{{ monitor.check_states.ok }}</a>
+       <a href="{{ monitor.url }}checks/warning/" class="label label-warning">{{ monitor.check_states.warning }}</a>
+       <a href="{{ monitor.url }}checks/critical/" class="label label-danger">{{ monitor.check_states.critical }}</a>
+       <a href="{{ monitor.url }}checks/unknown/" class="label label-primary">{{ monitor.check_states.unknown }}</a>
+       <a href="{{ monitor.url }}checks/disabled/" class="label label-default">{{ monitor.check_states.disabled }}</a>
+      </b>
+     </td>
     </tr>
     {% endverbatim %}
   </tbody>
