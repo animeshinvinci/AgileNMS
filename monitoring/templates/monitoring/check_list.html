@@ -3,7 +3,11 @@
 {% block title %}Check List{% endblock %}
 
 {% block extra_head %}
-<script src="/static/core/js/angular_controllers/check_list.js"></script>
+<script src="/static/monitoring/js/angular_controllers/check_list.js"></script>
+{% endblock %}
+
+{% block extra_footer %}
+<script src="/static/monitoring/js/new_check_form.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -43,7 +47,7 @@
      <h4 class="modal-title">New Check</h4>
     </div>
     <div class="modal-body">
-     <p>New check form here!</p>
+     <div id="new-check-form">Loading...</div>
     </div>
     <div class="modal-footer">
      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

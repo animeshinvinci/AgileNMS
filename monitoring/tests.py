@@ -1,103 +1,76 @@
 import unittest
 import datetime
+import json
 import models, tasks
 from django.utils import timezone
 
 
-class CheckTestCase(unittest.TestCase):
-    def test_poller(self):
-        # Create a dummy poller
-        newpoller = models.DummyPoller()
-        newpoller.value = "Hello World!"
-        newpoller.save()
+class DatabaseTests(unittest.TestCase):
+    def test_monitor(self):
+        # Create an HTTP monitor
+        monitor = models.Monitor()
+        monitor.protocol = "http"
+        monitor.data = json.dumps({
+            "host": "www.google.co.uk",
+            "port": 80,
+        })
+        monitor.save()
 
-        # Check that the poller saved correctly
-        poller = models.DummyPoller.objects.get(uuid=newpoller.uuid)
-        self.assertEqual(poller.value, "Hello World!")
-        self.assertEqual(poller.class_name, "poller.dummypoller")
-        self.assertEqual(poller.result_class_name, "pollerresult.dummypollerresult")
+        # Add a homepage check
+        monitor.add_check(data=json.dumps({
+            "method": "GET",
+            "path": "/"
+        }))
 
-        # Post some results, make sure that they post at different times
-        poller.post_result("foo", time=(timezone.now() - datetime.timedelta(minutes=1)))
-        poller.post_result("bar")
+        # Check that the check went in correctly
+        checks = monitor.check_set.all()
+        self.assertEqual(len(checks), 1)
+        check = checks[0]
 
-        # Check that they saved correctly
-        results = models.DummyPollerResult.objects.filter(check__uuid=poller.uuid)
+        # Post a result
+        check.post_result(data=json.dumps({
+            "status_code": 200,
+            "elapsed": 1,
+        }))
+
+        # Post an old result
+        check.post_result(data=json.dumps({
+            "status_code": 200,
+            "elapsed": 2,
+        }), time=(timezone.now() - datetime.timedelta(minutes=1)))
+
+        # Post a very old result
+        check.post_result(data=json.dumps({
+            "status_code": 200,
+            "elapsed": 3,
+        }), time=(timezone.now() - datetime.timedelta(hours=1)))
+
+        # Check the get_recent results function
+        # This should return two results, the new result first then the old result
+        # The very old result shouldnt be returned
+        results = check.get_recent_results()
         self.assertEqual(len(results), 2)
+        self.assertEqual(json.loads(results[0].data)["elapsed"], 1)
+        self.assertEqual(json.loads(results[1].data)["elapsed"], 2)
 
-        # Last result must be first in the list
-        self.assertEqual(results[0].value, "bar")
-
-    def test_get_recent_results(self):
-        # Create a dummy poller
-        poller = models.DummyPoller()
-        poller.value = "Hello World!"
-        poller.save()
-
-        # Post some results, make sure that they post at different times
-        poller.post_result("foo", time=(timezone.now() - datetime.timedelta(minutes=1)))
-        poller.post_result("bar")
-        poller.post_result("baz", time=(timezone.now() - datetime.timedelta(hours=1)))
-
-        # Get the results
-        results = poller.get_recent_results()
-
-        # Bar should be first in list then foo. Baz shouldnt be in this list as it is too old
-        # This tests result get child
-        self.assertEqual(len(results), 2)
-        self.assertEqual(results[0].get_child().value, "bar")
-        self.assertEqual(results[1].get_child().value, "foo")
-
-    def test_get_child(self):
-        # Create a dummy poller
-        newpoller = models.DummyPoller()
-        newpoller.value = "Hello World!"
-        newpoller.save()
-
-        # Get the poller again as a check
-        check = models.Check.objects.get(uuid=newpoller.uuid)
-
-        # Get the original poller back using get_child
-        poller = check.get_child()
-
-        # Get the value
-        self.assertEqual(poller.value, "Hello World!")
-
-    def test_should_poll(self):
-        # Create a dummy poller
-        poller = models.DummyPoller()
-        poller.value = "Hello World!"
-        poller.save()
-
-        # Pollers should poll when they have no results
-        self.assertEqual(poller.should_poll(), True)
-
-        # Pollers should poll when their latest result is too old
-        poller.post_result("I'm too old", time=(timezone.now() - datetime.timedelta(seconds=poller.poll_frequency + 100)))
-        self.assertEqual(poller.should_poll(), True)
-
-        # Pollers should not poll when they are disabled
-        poller.enabled = False
-        self.assertEqual(poller.should_poll(), False)
-        poller.enabled = True
-        self.assertEqual(poller.should_poll(), True)
-
-        # Pollers should not poll when their latest result is new
-        poller.post_result("I'm new!", time=(timezone.now() + datetime.timedelta(seconds=poller.poll_frequency + 100)))
-        self.assertEqual(poller.should_poll(), False)
-
-    def test_run_pollers_task(self):
-        # Create a dummy poller
-        poller = models.DummyPoller()
-        poller.value = "Hello World!"
-        poller.save()
-
-        # Run the run pollers task
-        tasks.run_pollers.delay()
-
-        # Check for result
-        results = models.DummyPollerResult.objects.filter(check__uuid=poller.uuid)
-        self.assertEqual(len(results), 1)
-
-        # Check that result was from the from the dummy poller task
-        self.assertEqual(results[0].value, "Greetings from the dummy poller task :)")
+    def test_groups(self):
+        def create_group(monitor_count):
+            # Create a group
+            group = models.Group()
+            
+            # Create some monitors
+            for i in range(monitor_count):
+                monitor = models.Monitor()
+                monitor.protocol = "dummy"
+                monitor.group = group
+                monitor.save()
+                
+            return group
+            
+        group_a = create_group(3)
+        group_b = create_group(3)
+        group_c = create_group(3)
+        
+        self.assertEqual(group_a.monitor_set.count(), 3)
+        # TODO
+        
