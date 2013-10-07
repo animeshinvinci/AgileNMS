@@ -85,8 +85,7 @@ INSTALLED_APPS = (
     "django.contrib.staticfiles",
     "django.contrib.admin",
     "djcelery",
-    "core",
-    "network",
+    "monitoring",
 )
 
 # LOGGING
