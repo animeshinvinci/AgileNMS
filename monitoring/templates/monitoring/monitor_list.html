@@ -1,31 +1,27 @@
 {% extends "base.html" %}
 
-{% block title %}Check List{% endblock %}
+{% block title %}Monitor List{% endblock %}
 
 {% block extra_head %}
-<script src="/static/monitoring/js/angular_controllers/check_list.js"></script>
-{% endblock %}
-
-{% block extra_footer %}
-<script src="/static/monitoring/js/new_check_form.js"></script>
+<script src="/static/monitoring/js/angular_controllers/monitor_list.js"></script>
 {% endblock %}
 
 {% block content %}
 
  <div class="navbar navbar-default">
   <div class="navbar-header">
-   <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".checks-navbar-collapse">
+   <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".monitors-navbar-collapse">
     <span class="sr-only">Toggle navigation</span>
     <span class="icon-bar"></span>
     <span class="icon-bar"></span>
     <span class="icon-bar"></span>
    </button>
-   <span class="navbar-brand">Checks</span>
+   <span class="navbar-brand">Monitors</span>
   </div>
-  <div class="collapse navbar-collapse checks-navbar-collapse">
+  <div class="collapse navbar-collapse monitors-navbar-collapse">
    <div class="navbar-right">
     <button type="button" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-refresh"></span></button>
-    <button type="button" class="btn btn-primary navbar-btn" data-toggle="modal" href="#new_check"><span class="glyphicon glyphicon-plus"></span> New Check</button>
+    <button type="button" class="btn btn-primary navbar-btn" data-toggle="modal" href="#new_monitor"><span class="glyphicon glyphicon-plus"></span> New Monitor</button>
    </div>
    <form class="navbar-form navbar-right">
     <div class="input-group">
@@ -39,15 +35,15 @@
  </div>
 
 
- <div class="modal fade" id="new_check" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+ <div class="modal fade" id="new_monitor" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
    <div class="modal-content">
     <div class="modal-header">
      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-     <h4 class="modal-title">New Check</h4>
+     <h4 class="modal-title">New Monitor</h4>
     </div>
     <div class="modal-body">
-     <div id="new-check-form">Loading...</div>
+     <div id="new-monitor-form">Loading...</div>
     </div>
     <div class="modal-footer">
      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -57,7 +53,7 @@
   </div>
  </div>
 
- <table class="table table-striped" ng-controller="CheckListCtrl">
+ <table class="table table-striped" ng-controller="MonitorListCtrl">
   <thead>
    <tr>
     <th>Name</th>
@@ -67,12 +63,12 @@
   </thead>
    <tbody>
     {% verbatim %}
-    <tr ng-repeat="check in checks">
+    <tr ng-repeat="monitor in monitors">
      <td>
-      <a href="{{ check.url }}">{{ check.name }}</a>
+      <a href="{{ monitor.url }}">{{ monitor.name }}</a>
      </td>
-     <td style="text-transform: uppercase" class="{{ check.class }} text-{{ check.class }}"><b>{{ check.state }}</b></td>
-     <td style="text-transform: uppercase" class="{{ check.class }} text-{{ check.class }}"><b>{{ check.data }}</b></td>
+     <td style="text-transform: uppercase" class="{{ monitor.class }} text-{{ monitor.class }}"><b>{{ monitor.state }}</b></td>
+     <td style="text-transform: uppercase" class="{{ monitor.class }} text-{{ monitor.class }}"><b>{{ monitor.data }}</b></td>
     </tr>
     {% endverbatim %}
   </tbody>

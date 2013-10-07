@@ -4,12 +4,12 @@ import json
 import models
 
 
-class CheckListView(ListView):
-    model = models.Check
+class MonitorListView(ListView):
+    model = models.Monitor
 
 
-class CheckDetailView(DetailView):
-    model = models.Check
+class MonitorDetailView(DetailView):
+    model = models.Monitor
 
 
 class ProblemListView(ListView):

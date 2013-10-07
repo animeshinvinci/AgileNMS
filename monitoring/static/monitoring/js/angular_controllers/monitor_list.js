@@ -1,5 +1,5 @@
-function CheckListCtrl($scope) {
-    $scope.checks = [
+function MonitorListCtrl($scope) {
+    $scope.monitors = [
         {
             "name": "HTTP Poller: http://www.google.co.uk",
             "uuid": "00000000000000000000000000000000",
