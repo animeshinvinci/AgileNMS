@@ -57,13 +57,16 @@ class Check(models.Model):
         # Save
         result.save()
 
-    def post_problem(self):
+    def post_problem(self, major, summary, details=""):
         # Create problem
         problem = Problem()
         if time is None:
             time = timezone.now()
         problem.time = time
         problem.check = self
+        problem.major = major
+        problem.summary = summary
+        problem.details = details
 
         # Save
         problem.save()
@@ -109,9 +112,18 @@ class Result(models.Model):
 
 
 class Problem(models.Model):
+    PROBLEM_STATUS_CHOICES = (
+        (1, "Unhandled"),
+        (2, "Acknowledged"),
+        (3, "Resolved"),
+    )
     uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
     check = models.ForeignKey(Check)
     time = models.DateTimeField()
+    status = models.IntegerField(choices=PROBLEM_STATUS_CHOICES, default=1)
+    major = models.BooleanField()
+    summary = models.CharField(max_length=200)
+    details = models.TextField()
 
     def save(self, *args, **kwargs):
         if not self.uuid:
