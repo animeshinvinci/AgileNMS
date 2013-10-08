@@ -122,3 +122,32 @@ class Problem(models.Model):
 
     class Meta:
         ordering = ("-time",)
+
+
+class Report(models.Model):
+    # Basic info
+    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
+    name = models.CharField(max_length=100, blank=True)
+    enabled = models.BooleanField(default=True)
+
+    # List of checks to include
+    checks = models.ManyToManyField(Check, null=True, blank=True)
+
+    # Schedule
+    SCHEDULE_CHOICES = (
+        (1, "Daily"),
+        (2, "Weekly"),
+        (3, "Monthly"),
+        (4, "Quarterly"),
+        (5, "Yearly"),
+    )
+    schedule = models.IntegerField(choices=SCHEDULE_CHOICES)
+    start_day = models.DateField()
+
+    def save(self, *args, **kwargs):
+        if not self.uuid:
+            self.uuid = uuid.uuid4().hex
+        super(Check, self).save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return "".join(["/reports/", self.uuid, "/"])
