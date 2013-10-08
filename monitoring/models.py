@@ -1,9 +1,11 @@
 from django.db import models
 from django.utils import timezone
 import datetime
+import uuid
 
 
 class Check(models.Model):
+    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
     display_name = models.CharField(max_length=100, blank=True)
     url = models.CharField(max_length=300, verbose_name="URL")
     enabled = models.BooleanField(default=True)
@@ -54,8 +56,13 @@ class Check(models.Model):
         # Save
         result.save()
 
+    def save(self, *args, **kwargs):
+        if not self.uuid:
+            self.uuid = uuid.uuid4().hex
+        super(Check, self).save(*args, **kwargs)
+
     def get_absolute_url(self):
-        return "".join(["/checks/", str(self.pk), "/"])
+        return "".join(["/checks/", self.uuid, "/"])
 
     def __unicode__(self):
         if self.display_name:
@@ -70,14 +77,20 @@ class Result(models.Model):
         ("critical", "CRITICAL"),
         ("unknown", "UNKNOWN"),
     )
+    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
     check = models.ForeignKey(Check)
     time = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     status_text = models.CharField(max_length=200, blank=True)
     maintenance_mode = models.BooleanField()
 
+    def save(self, *args, **kwargs):
+        if not self.uuid:
+            self.uuid = uuid.uuid5(uuid.UUID(hex=self.check.uuid), str(self.time)).hex
+        super(Result, self).save(*args, **kwargs)
+
     def get_absolute_url(self):
-        return "".join([self.check.get_absolute_url(), "results/", str(self.pk), "/"])
+        return "".join([self.check.get_absolute_url(), "results/", self.uuid, "/"])
 
     class Meta:
         ordering = ("-time",)

@@ -1,7 +1,7 @@
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.http import Http404, HttpResponse
 import json
-import models
+import models, forms
 
 
 class CheckListView(ListView):
@@ -14,10 +14,12 @@ class CheckDetailView(DetailView):
 
 class CheckCreateView(CreateView):
     model = models.Check
+    form_class = forms.CheckForm
 
 
 class CheckUpdateView(UpdateView):
     model = models.Check
+    form_class = forms.CheckForm
 
 
 class CheckDeleteView(DeleteView):
