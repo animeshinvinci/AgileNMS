@@ -56,6 +56,17 @@ class Check(models.Model):
         # Save
         result.save()
 
+    def post_problem(self):
+        # Create problem
+        problem = Problem()
+        if time is None:
+            time = timezone.now()
+        problem.time = time
+        problem.check = self
+
+        # Save
+        problem.save()
+
     def save(self, *args, **kwargs):
         if not self.uuid:
             self.uuid = uuid.uuid4().hex
@@ -91,6 +102,23 @@ class Result(models.Model):
 
     def get_absolute_url(self):
         return "".join([self.check.get_absolute_url(), "results/", self.uuid, "/"])
+
+    class Meta:
+        ordering = ("-time",)
+
+
+class Problem(models.Model):
+    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
+    check = models.ForeignKey(Check)
+    time = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.uuid:
+            self.uuid = uuid.uuid5(uuid.UUID(hex=self.check.uuid), str(self.time)).hex
+        super(Result, self).save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return "".join([self.check.get_absolute_url(), "problems/", self.uuid, "/"])
 
     class Meta:
         ordering = ("-time",)
