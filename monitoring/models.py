@@ -35,9 +35,11 @@ class Check(models.Model):
         # Return last results status
         return last_result.status
 
-    def post_result(self, status="unknown", status_text="", time=timezone.now()):
+    def post_result(self, status="unknown", status_text="", time=None):
         # Create result
         result = Result()
+        if time is None:
+            time = timezone.now()
         result.time = time
         result.check = self
         result.status = status
