@@ -147,7 +147,7 @@ class Report(models.Model):
     def save(self, *args, **kwargs):
         if not self.uuid:
             self.uuid = uuid.uuid4().hex
-        super(Check, self).save(*args, **kwargs)
+        super(Report, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         return "".join(["/reports/", self.uuid, "/"])
