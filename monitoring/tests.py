@@ -6,71 +6,26 @@ from django.utils import timezone
 
 
 class DatabaseTests(unittest.TestCase):
-    def test_monitor(self):
-        # Create an HTTP monitor
-        monitor = models.Monitor()
-        monitor.protocol = "http"
-        monitor.data = json.dumps({
-            "host": "www.google.co.uk",
-            "port": 80,
-        })
-        monitor.save()
+    def test_check(self):
+        # Create a check
+        check = models.Check()
+        check.url = "dummy://hello"
+        check.save()
 
-        # Add a homepage check
-        monitor.add_check(data=json.dumps({
-            "method": "GET",
-            "path": "/"
-        }))
+        # Get the check
+        checkb = models.Check.objects.get(pk=check.pk)
+        self.assertEqual(checkb.url, "dummy://hello")
 
-        # Check that the check went in correctly
-        checks = monitor.check_set.all()
-        self.assertEqual(len(checks), 1)
-        check = checks[0]
+        # Post some check results
+        check.post_result(status="ok", status_text="old", time=timezone.now() - datetime.timedelta(hours=1))
+        check.post_result(status="critical", status_text="new", time=timezone.now() - datetime.timedelta(minutes=1))
+        checkb.post_result(status="warning", status_text="late", time=timezone.now() - datetime.timedelta(minutes=3))
 
-        # Post a result
-        check.post_result(data=json.dumps({
-            "status_code": 200,
-            "elapsed": 1,
-        }))
+        # Check should be in critical state
+        self.assertEqual(check.get_status(), "critical")
 
-        # Post an old result
-        check.post_result(data=json.dumps({
-            "status_code": 200,
-            "elapsed": 2,
-        }), time=(timezone.now() - datetime.timedelta(minutes=1)))
-
-        # Post a very old result
-        check.post_result(data=json.dumps({
-            "status_code": 200,
-            "elapsed": 3,
-        }), time=(timezone.now() - datetime.timedelta(hours=1)))
-
-        # Check the get_recent results function
-        # This should return two results, the new result first then the old result
-        # The very old result shouldnt be returned
+        # Recent results should return the new and late statuses
         results = check.get_recent_results()
         self.assertEqual(len(results), 2)
-        self.assertEqual(json.loads(results[0].data)["elapsed"], 1)
-        self.assertEqual(json.loads(results[1].data)["elapsed"], 2)
-
-    def test_groups(self):
-        def create_group(monitor_count):
-            # Create a group
-            group = models.Group()
-            
-            # Create some monitors
-            for i in range(monitor_count):
-                monitor = models.Monitor()
-                monitor.protocol = "dummy"
-                monitor.group = group
-                monitor.save()
-                
-            return group
-            
-        group_a = create_group(3)
-        group_b = create_group(3)
-        group_c = create_group(3)
-        
-        self.assertEqual(group_a.monitor_set.count(), 3)
-        # TODO
-        
+        self.assertEqual(results[0].status_text, "new")
+        self.assertEqual(results[1].status_text, "late")
