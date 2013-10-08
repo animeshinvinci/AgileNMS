@@ -153,15 +153,17 @@ class Check(models.Model):
             return "unknown"
 
         # Return last results status
-        return last_result.get_status()
+        return last_result.status
 
-    def post_result(self, data="", time=timezone.now()):
+    def post_result(self, status="unknown", status_text="", data="", time=timezone.now()):
         # Create result
         result = Result()
         result.time = time
         result.check = self
-        result.maintenance_mode = self.maintenance_mode or self.monitor.maintenance_mode
+        result.status = status
+        result.status_text = status_text
         result.data = data
+        result.maintenance_mode = self.maintenance_mode or self.monitor.maintenance_mode
 
         # Save
         result.save()
@@ -176,11 +178,19 @@ class Check(models.Model):
 
 
 class Result(models.Model):
+    STATUS_CHOICES = (
+        ("ok", "OK"),
+        ("warning", "WARNING"),
+        ("critical", "CRITICAL"),
+        ("unknown", "UNKNOWN"),
+    )
     uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
     check = models.ForeignKey(Check)
     time = models.DateTimeField()
-    maintenance_mode = models.BooleanField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    status_text = models.CharField(max_length=200)
     data = models.TextField()
+    maintenance_mode = models.BooleanField()
 
     def save(self, *args, **kwargs):
         if self.check and self.time:
