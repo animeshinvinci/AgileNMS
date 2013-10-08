@@ -53,7 +53,7 @@
   </div>
  </div>
 
- <table class="table table-striped" ng-controller="MonitorListCtrl">
+ <table class="table table-striped">
   <thead>
    <tr>
     <th>Name</th>
@@ -61,24 +61,36 @@
    </tr>
   </thead>
    <tbody>
-    {% verbatim %}
-    <tr ng-repeat="monitor in monitors">
-     <td>
-      <a href="{{ monitor.url }}">{{ monitor.name }}</a>
-     </td>
-     <td style="text-transform: uppercase"><b>
-      <span class="text-{{ monitor.class }}">{{ monitor.state }}</span>
-     <td style="text-transform: uppercase">
-      <b>
-       <a href="{{ monitor.url }}checks/ok/" class="label label-success">{{ monitor.check_states.ok }}</a>
-       <a href="{{ monitor.url }}checks/warning/" class="label label-warning">{{ monitor.check_states.warning }}</a>
-       <a href="{{ monitor.url }}checks/critical/" class="label label-danger">{{ monitor.check_states.critical }}</a>
-       <a href="{{ monitor.url }}checks/unknown/" class="label label-primary">{{ monitor.check_states.unknown }}</a>
-       <a href="{{ monitor.url }}checks/disabled/" class="label label-default">{{ monitor.check_states.disabled }}</a>
-      </b>
-     </td>
-    </tr>
-    {% endverbatim %}
+    {% for monitor in monitor_list %}
+     {% with monitor_state=monitor.get_state %}
+      <tr>
+       <td>
+        <a href="{{ monitor.get_absolute_url }}">{{ monitor }}</a>
+       </td>
+       <td style="text-transform: uppercase"><b>
+        <span class="text-{{ monitor_state.status_bootstrap_class }}">{{ monitor_state.status }}</span>
+       <td style="text-transform: uppercase">
+        <b>
+         {% if monitor_state.check_statuses.ok > 0 %}
+         <a href="{{ monitor.get_absolute_url }}checks/ok/" class="label label-success">{{ monitor_state.check_statuses.ok }}</a>
+         {% endif %}
+         {% if monitor_state.check_statuses.warning > 0 %}
+         <a href="{{ monitor.get_absolute_url }}checks/warning/" class="label label-warning">{{ monitor_state.check_statuses.warning }}</a>
+         {% endif %}
+         {% if monitor_state.check_statuses.critical > 0 %}
+         <a href="{{ monitor.get_absolute_url }}checks/critical/" class="label label-danger">{{ monitor_state.check_statuses.critical }}</a>
+         {% endif %}
+         {% if monitor_state.check_statuses.unknown > 0 %}
+         <a href="{{ monitor.get_absolute_url }}checks/unknown/" class="label label-primary">{{ monitor_state.check_statuses.unknown }}</a>
+         {% endif %}
+         {% if monitor_state.check_statuses.disabled > 0 %}
+         <a href="{{ monitor.get_absolute_url }}checks/disabled/" class="label label-default">{{ monitor_state.check_statuses.disabled }}</a>
+         {% endif %}
+        </b>
+       </td>
+      </tr>
+     {% endwith %}
+    {% endfor %}
   </tbody>
  </table>
 {% endblock %}
