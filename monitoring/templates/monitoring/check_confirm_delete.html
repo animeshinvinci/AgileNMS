@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Check{% endblock %}
+
+{% block content %}
+ <p>Are you sure that you want to delete this check?</p>
+ <form action="#" method="post">
+ {% csrf_token %}
+ <input type="submit" value="Delete">
+ </form>
+{% endblock %}

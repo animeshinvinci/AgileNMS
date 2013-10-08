@@ -22,3 +22,4 @@ class CheckUpdateView(UpdateView):
 
 class CheckDeleteView(DeleteView):
     model = models.Check
+    success_url = "/checks/"
