@@ -10,6 +10,7 @@ class Check(models.Model):
     url = models.CharField(max_length=300, verbose_name="URL")
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
+    passive = models.BooleanField(default=False)
 
     def get_recent_results(self, max_age=datetime.timedelta(minutes=10)):
         min_time = timezone.now() - max_age

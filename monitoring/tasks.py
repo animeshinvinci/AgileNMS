@@ -42,7 +42,7 @@ handlers = {
 @task()
 def run_checks():
     # Get check list
-    checks = models.Check.objects.filter(enabled=True)
+    checks = models.Check.objects.filter(enabled=True, passive=False)
 
     # Loop through checks and run them
     for check in checks:
