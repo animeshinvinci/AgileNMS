@@ -4,7 +4,7 @@ import datetime
 
 
 class Check(models.Model):
-    display_name = models.CharField(max_length=100)
+    display_name = models.CharField(max_length=100, blank=True)
     url = models.CharField(max_length=300)
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
@@ -66,7 +66,7 @@ class Result(models.Model):
     check = models.ForeignKey(Check)
     time = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
-    status_text = models.CharField(max_length=200)
+    status_text = models.CharField(max_length=200, blank=True)
     maintenance_mode = models.BooleanField()
 
     def get_absolute_url(self):
