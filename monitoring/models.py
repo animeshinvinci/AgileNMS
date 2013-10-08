@@ -101,7 +101,7 @@ class Result(models.Model):
         super(Result, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return "".join([self.check.get_absolute_url(), "results/", self.uuid, "/"])
+        return "".join(["/results/", self.uuid, "/"])
 
     class Meta:
         ordering = ("-time",)
@@ -118,7 +118,7 @@ class Problem(models.Model):
         super(Result, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return "".join([self.check.get_absolute_url(), "problems/", self.uuid, "/"])
+        return "".join(["/problems/", self.uuid, "/"])
 
     class Meta:
         ordering = ("-time",)
