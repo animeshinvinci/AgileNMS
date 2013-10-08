@@ -1,0 +1,81 @@
+.status-label-disabled {
+  background-color: #999999;
+}
+
+.status-label-disabled[href]:hover,
+.status-label-disabled[href]:focus {
+  background-color: #808080;
+}
+
+.status-label-unknown {
+  background-color: #428bca;
+}
+
+.status-label-unknown[href]:hover,
+.status-label-unknown[href]:focus {
+  background-color: #3071a9;
+}
+
+.status-label-ok {
+  background-color: #5cb85c;
+}
+
+.status-label-ok[href]:hover,
+.status-label-ok[href]:focus {
+  background-color: #449d44;
+}
+
+
+.status-label-warning {
+  background-color: #f0ad4e;
+}
+
+.status-label-warning[href]:hover,
+.status-label-warning[href]:focus {
+  background-color: #ec971f;
+}
+
+.status-label-critical {
+  background-color: #d9534f;
+}
+
+.status-label-critical[href]:hover,
+.status-label-critical[href]:focus {
+  background-color: #c9302c;
+}
+
+.status-text-disabled {
+  color: #999999;
+}
+
+.status-text-unknown {
+  color: #428bca;
+}
+
+.status-text-unknown:hover {
+  color: #3071a9;
+}
+
+.status-text-warning {
+  color: #c09853;
+}
+
+.status-text-warning:hover {
+  color: #a47e3c;
+}
+
+.status-text-critical {
+  color: #b94a48;
+}
+
+.status-text-critical:hover {
+  color: #953b39;
+}
+
+.status-text-ok {
+  color: #468847;
+}
+
+.status-text-ok:hover {
+  color: #356635;
+}

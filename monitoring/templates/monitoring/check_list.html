@@ -2,6 +2,10 @@
 
 {% block title %}Check List{% endblock %}
 
+{% block extra_head %}
+ <link href="/static/monitoring/css/main.css" rel="stylesheet" media="screen">
+{% endblock %}
+
 {% block content %}
  <div class="navbar navbar-default">
   <div class="navbar-header">
@@ -43,7 +47,7 @@
        <a href="{{ check.get_absolute_url }}">{{ check }}</a>
       </td>
       <td style="text-transform: uppercase"><b>
-      <span class="text-{{ check.get_status }}">{{ check.get_status }}</span>
+      <span class="status-text-{{ check.get_status }}">{{ check.get_status }}</span>
       </b></td>
      </tr>
     {% endfor %}

@@ -3,6 +3,10 @@
 
 {% block title %}Check Form{% endblock %}
 
+{% block extra_head %}
+ <link href="/static/monitoring/css/main.css" rel="stylesheet" media="screen">
+{% endblock %}
+
 {% block content %}
  <h3>{% if check %}Edit {{ check }}{% else %}New Check{% endif %}</h3>
 
