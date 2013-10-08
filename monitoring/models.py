@@ -70,6 +70,48 @@ class Monitor(models.Model):
         # Save check
         check.save()
 
+    def get_state(self):
+        # Get check list
+        checks = self.check_set.all()
+
+        # Initialise state structure
+        state = {
+            "status": "unknown",
+            "status_bootstrap_class": "primary",
+            "check_statuses": {
+                "ok": 0,
+                "warning": 0,
+                "critical": 0,
+                "unknown": 0,
+                "disabled": 0,
+            }
+        }
+
+        # Loop through checks
+        for check in checks:
+            check_status = check.get_status()
+            state["check_statuses"][check_status] += 1
+
+        # Work out status
+        if state["check_statuses"]["critical"] > 0:
+            state["status"] = "critical"
+            state["status_bootstrap_class"] = "danger"
+        elif state["check_statuses"]["warning"] > 0:
+            state["status"] = "warning"
+            state["status_bootstrap_class"] = "warning"
+        elif state["check_statuses"]["unknown"] > 0:
+            state["status"] = "unknown"
+            state["status_bootstrap_class"] = "primary"
+        elif state["check_statuses"]["ok"] > 0:
+            state["status"] = "ok"
+            state["status_bootstrap_class"] = "success"
+        elif state["check_statuses"]["disabled"] > 0:
+            state["status"] = "disabled"
+            state["status_bootstrap_class"] = "muted"
+
+        # Return state
+        return state
+
     def get_absolute_url(self):
         return "".join(["/monitors/", self.uuid, "/"])
 
@@ -91,8 +133,27 @@ class Check(models.Model):
         min_time = timezone.now() - max_age
         return Result.objects.filter(check=self, time__gt=min_time)
 
-    def get_last_result_time(self):
-        return Result.objects.all()[0]
+    def get_last_result(self):
+        return self.result_set.all()[0]
+
+    def get_status(self):
+        # Check if this is disabled
+        if not self.enabled or not self.monitor.enabled:
+            return "disabled"
+
+        # Get last result
+        try:
+            last_result = self.get_last_result()
+        except:
+            return "unknown"
+
+        # Make sure it was produced in past 10 minutes
+        min_time = timezone.now() - datetime.timedelta(minutes=10)
+        if last_result.time < min_time:
+            return "unknown"
+
+        # Return last results status
+        return last_result.get_status()
 
     def post_result(self, data="", time=timezone.now()):
         # Create result
