@@ -5,7 +5,7 @@ import datetime
 
 class Check(models.Model):
     display_name = models.CharField(max_length=100, blank=True)
-    url = models.CharField(max_length=300)
+    url = models.CharField(max_length=300, verbose_name="URL")
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
 
