@@ -6,7 +6,7 @@ import uuid
 
 class Check(models.Model):
     uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
-    display_name = models.CharField(max_length=100, blank=True)
+    name = models.CharField(max_length=100, blank=True)
     url = models.CharField(max_length=300, verbose_name="URL")
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
@@ -65,8 +65,8 @@ class Check(models.Model):
         return "".join(["/checks/", self.uuid, "/"])
 
     def __unicode__(self):
-        if self.display_name:
-            return self.display_name
+        if self.name:
+            return self.name
         return self.url
 
 
