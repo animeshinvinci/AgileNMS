@@ -9,5 +9,5 @@ urlpatterns = patterns("",
     url(r"^checks/critical/$", views.CheckListView.as_view()),
     url(r"^checks/unknown/$", views.CheckListView.as_view()),
     url(r"^checks/disabled/$", views.CheckListView.as_view()),
-    url(r"^checks/(?P<pk>d+)/$", views.CheckDetailView.as_view()),
+    url(r"^checks/(?P<pk>\d+)/$", views.CheckDetailView.as_view()),
 )

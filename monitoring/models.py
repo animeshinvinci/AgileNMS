@@ -48,7 +48,7 @@ class Check(models.Model):
         result.save()
 
     def get_absolute_url(self):
-        return "".join(["/checks/", self.pk, "/"])
+        return "".join(["/checks/", str(self.pk), "/"])
 
     def __unicode__(self):
         if self.display_name:
@@ -70,7 +70,7 @@ class Result(models.Model):
     maintenance_mode = models.BooleanField()
 
     def get_absolute_url(self):
-        return "".join([self.check.get_absolute_url(), "results/", self.pk, "/"])
+        return "".join([self.check.get_absolute_url(), "results/", str(self.pk), "/"])
 
     class Meta:
         ordering = ("-time",)

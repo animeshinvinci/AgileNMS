@@ -7,4 +7,3 @@ from django.utils import timezone
 
 class DatabaseTests(unittest.TestCase):
     pass
-        
