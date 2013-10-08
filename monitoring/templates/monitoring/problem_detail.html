@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Check Detail{% endblock %}
+
+{% block extra_head %}
+ <link href="/static/monitoring/css/main.css" rel="stylesheet" media="screen">
+{% endblock %}
+
+{% block content %}
+ <div class="row">
+  <div class="col-lg-9">
+   <h3>{{ check }} <sup><span class="label status-label-{{ check.get_status }}" style="text-transform: uppercase;">{{ check.get_status }}</span></sup></h3>
+   <p>URL: {{ check.url }}</p>
+  
+   <h4 style="padding-top: 20px;">Status</h4>
+   {% with check.get_last_result as result %}
+    {% if result %}
+     Current status: <span class="status-text-{{ result.status }}" style="text-transform: uppercase; font-weight: bold;">{{ result.status }}</span><br>
+     Info: {{ result.status_text }}<br>
+     Last checked: {{ result.time|naturaltime }}
+    {% else %}
+     No results have been collected yet.
+    {% endif %}
+   {% endwith %}
+  
+  </div>
+  <div class="col-lg-3">
+   <button type="button" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-refresh"></span></button>
+   <button type="button" class="btn btn-primary navbar-btn" onclick="javascript:window.location='{{ check.get_absolute_url }}update/';"><span class="glyphicon glyphicon-pencil"></span> Edit</button>
+   <button type="button" class="btn btn-danger navbar-btn" onclick="javascript:window.location='{{ check.get_absolute_url }}delete/';"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+  </div>
+ </div>
+{% endblock %}
