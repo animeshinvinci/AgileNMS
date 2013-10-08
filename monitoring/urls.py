@@ -13,4 +13,6 @@ urlpatterns = patterns("",
     url(r"^checks/(?P<pk>[0-9a-f]{32})/$", views.CheckDetailView.as_view()),
     url(r"^checks/(?P<pk>[0-9a-f]{32})/update/$", views.CheckUpdateView.as_view()),
     url(r"^checks/(?P<pk>[0-9a-f]{32})/delete/$", views.CheckDeleteView.as_view()),
+    url(r"^problems/$", views.ProblemListView.as_view()),
+    url(r"^problems/(?P<pk>[0-9a-f]{32})/$", views.ProblemDetailView.as_view()),
 )

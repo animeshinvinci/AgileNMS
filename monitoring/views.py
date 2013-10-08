@@ -25,3 +25,11 @@ class CheckUpdateView(UpdateView):
 class CheckDeleteView(DeleteView):
     model = models.Check
     success_url = "/checks/"
+
+
+class ProblemListView(ListView):
+    model = models.Problem
+
+
+class ProblemDetailView(DetailView):
+    model = models.Problem
