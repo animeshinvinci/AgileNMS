@@ -118,3 +118,12 @@ LOGGING = {
 import djcelery
 djcelery.setup_loader()
 CELERY_ALWAYS_EAGER = DEBUG
+
+from datetime import timedelta
+
+CELERYBEAT_SCHEDULE = {
+    "run-checks-every-5-minutes": {
+        "task": "monitoring.tasks.run_checks",
+        "schedule": timedelta(minutes=5),
+    },
+}
