@@ -4,13 +4,13 @@
 {% block title %}Check Form{% endblock %}
 
 {% block content %}
- <h3>{% if check %}Update {{ check }}{% else %}New Check{% endif %}</h3>
+ <h3>{% if check %}Edit {{ check }}{% else %}New Check{% endif %}</h3>
 
  <div style="max-width: 400px;">
   <form action="#" method="post">
    {% csrf_token %}
    {{ form|bootstrap }}
-   <button class="btn btn-default">Cancel</button> <button type="submit" class="btn btn-primary">Save</button>
+   <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-save"></span> Save</button>
   </form>
  </div>
 {% endblock %}
