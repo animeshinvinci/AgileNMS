@@ -127,7 +127,7 @@ class Problem(models.Model):
 class Report(models.Model):
     # Basic info
     uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
-    name = models.CharField(max_length=100, blank=True)
+    name = models.CharField(max_length=100)
     enabled = models.BooleanField(default=True)
 
     # List of checks to include
@@ -151,3 +151,6 @@ class Report(models.Model):
 
     def get_absolute_url(self):
         return "".join(["/reports/", self.uuid, "/"])
+
+    def __unicode__(self):
+        return self.name

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Report Detail{% endblock %}
+
+{% block reports_navitem_classes %}active{% endblock %}
+
+{% block extra_head %}
+ <link href="/static/monitoring/css/main.css" rel="stylesheet" media="screen">
+{% endblock %}
+
+{% block content %}
+ <div class="row">
+  <div class="col-lg-9">
+   <h3>{{ report }}</h3>
+  </div>
+  <div class="col-lg-3">
+   <button type="button" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-refresh"></span></button>
+  </div>
+ </div>
+{% endblock %}

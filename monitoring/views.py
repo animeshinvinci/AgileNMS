@@ -27,9 +27,34 @@ class CheckDeleteView(DeleteView):
     success_url = "/checks/"
 
 
+
 class ProblemListView(ListView):
     model = models.Problem
 
 
 class ProblemDetailView(DetailView):
     model = models.Problem
+
+
+
+class ReportListView(ListView):
+    model = models.Report
+
+
+class ReportDetailView(DetailView):
+    model = models.Report
+
+
+class ReportCreateView(CreateView):
+    model = models.Report
+    form_class = forms.ReportForm
+
+
+class ReportUpdateView(UpdateView):
+    model = models.Report
+    form_class = forms.ReportForm
+
+
+class ReportDeleteView(DeleteView):
+    model = models.Report
+    success_url = "/reports/"
