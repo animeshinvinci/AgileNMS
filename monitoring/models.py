@@ -55,12 +55,11 @@ class Monitor(models.Model):
     display_name = models.CharField(max_length=100)
     group = models.ForeignKey(Group, null=True, blank=True)
     protocol = models.CharField(max_length=100, choices=PROTOCOL_CHOICES)
-    data = models.TextField()
     contacts = models.ManyToManyField(Contact, null=True, blank=True)
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
 
-    def add_check(self, name="", data=""):
+    def _add_check(self, name="", data=""):
         # Create check
         check = Check()
         check.monitor = self
@@ -119,6 +118,23 @@ class Monitor(models.Model):
         if self.display_name:
             return self.display_name
         return self.uuid
+
+
+class DummyMonitor(Monitor):
+    pass
+
+
+class PingMonitor(Monitor):
+    ping_hostname = models.CharField(max_length=200)
+
+
+class TCPMonitor(Monitor):
+    tcp_hostname = models.CharField(max_length=200)
+    tcp_port = models.IntegerField()
+
+
+class HTTPMonitor(Monitor):
+    http_host = models.CharField(max_length=200)
 
 
 class Check(models.Model):
