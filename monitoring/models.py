@@ -33,48 +33,14 @@ class Contact(models.Model):
 class Group(models.Model):
     slug = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
-    parent = models.ForeignKey("Group", null=True, blank=True)
     contacts = models.ManyToManyField(Contact, null=True, blank=True)
-
-    def get_absolute_url(self):
-        return "".join(["/groups/", self.slug, "/"])
-
-    def clean(self):
-        pass # TODO: CHECK FOR LOOPS IN GROUP TREE
-
-
-class Monitor(models.Model):
-    PROTOCOL_CHOICES = (
-        ("dummy", "Dummy"),
-        ("ping", "Ping"),
-        ("tcp", "TCP"),
-        ("http", "HTTP"),
-        ("https", "HTTPS"),
-    )
-    uuid = models.CharField("UUID", max_length=32, primary_key=True, default=lambda: uuid.uuid4().hex)
-    display_name = models.CharField(max_length=100)
-    group = models.ForeignKey(Group, null=True, blank=True)
-    protocol = models.CharField(max_length=100, choices=PROTOCOL_CHOICES)
-    contacts = models.ManyToManyField(Contact, null=True, blank=True)
-    enabled = models.BooleanField(default=True)
-    maintenance_mode = models.BooleanField(default=False)
-
-    def _add_check(self, name="", data=""):
-        # Create check
-        check = Check()
-        check.monitor = self
-        check.display_name = name
-        check.data = data
-
-        # Save check
-        check.save()
-
-    def get_state(self):
+    
+    def get_status(self):
         # Get check list
         checks = self.check_set.all()
 
-        # Initialise state structure
-        state = {
+        # Initialise status structure
+        status = {
             "status": "unknown",
             "status_bootstrap_class": "primary",
             "check_statuses": {
@@ -89,65 +55,45 @@ class Monitor(models.Model):
         # Loop through checks
         for check in checks:
             check_status = check.get_status()
-            state["check_statuses"][check_status] += 1
+            status["check_statuses"][check_status] += 1
 
         # Work out status
-        if state["check_statuses"]["critical"] > 0:
-            state["status"] = "critical"
-            state["status_bootstrap_class"] = "danger"
-        elif state["check_statuses"]["warning"] > 0:
-            state["status"] = "warning"
-            state["status_bootstrap_class"] = "warning"
-        elif state["check_statuses"]["unknown"] > 0:
-            state["status"] = "unknown"
-            state["status_bootstrap_class"] = "primary"
-        elif state["check_statuses"]["ok"] > 0:
-            state["status"] = "ok"
-            state["status_bootstrap_class"] = "success"
-        elif state["check_statuses"]["disabled"] > 0:
-            state["status"] = "disabled"
-            state["status_bootstrap_class"] = "muted"
+        if status["check_statuses"]["critical"] > 0:
+            status["status"] = "critical"
+            status["status_bootstrap_class"] = "danger"
+        elif status["check_statuses"]["warning"] > 0:
+            status["status"] = "warning"
+            status["status_bootstrap_class"] = "warning"
+        elif status["check_statuses"]["unknown"] > 0:
+            status["status"] = "unknown"
+            status["status_bootstrap_class"] = "primary"
+        elif status["check_statuses"]["ok"] > 0:
+            status["status"] = "ok"
+            status["status_bootstrap_class"] = "success"
+        elif status["check_statuses"]["disabled"] > 0:
+            status["status"] = "disabled"
+            status["status_bootstrap_class"] = "muted"
 
-        # Return state
-        return state
+        # Return status
+        return status
 
     def get_absolute_url(self):
-        return "".join(["/monitors/", self.uuid, "/"])
-
+        return "".join(["/groups/", self.slug, "/"])
+        
     def __unicode__(self):
-        if self.display_name:
-            return self.display_name
-        return self.uuid
-
-
-class DummyMonitor(Monitor):
-    pass
-
-
-class PingMonitor(Monitor):
-    ping_hostname = models.CharField(max_length=200)
-
-
-class TCPMonitor(Monitor):
-    tcp_hostname = models.CharField(max_length=200)
-    tcp_port = models.IntegerField()
-
-
-class HTTPMonitor(Monitor):
-    http_host = models.CharField(max_length=200)
+        return self.name
 
 
 class Check(models.Model):
-    uuid = models.CharField("UUID", max_length=32, primary_key=True, default=lambda: uuid.uuid4().hex)
-    monitor = models.ForeignKey(Monitor)
     display_name = models.CharField(max_length=100)
-    data = models.TextField()
+    group = models.ForeignKey(Group)
+    url = models.CharField(max_length=300)
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
-
+    
     def get_recent_results(self, max_age=datetime.timedelta(minutes=10)):
         min_time = timezone.now() - max_age
-        return Result.objects.filter(check=self, time__gt=min_time)
+        return self.result_set.filter(time__gt=min_time)
 
     def get_last_result(self):
         return self.result_set.all()[0]
@@ -171,14 +117,13 @@ class Check(models.Model):
         # Return last results status
         return last_result.status
 
-    def post_result(self, status="unknown", status_text="", data="", time=timezone.now()):
+    def post_result(self, status="unknown", status_text="", time=timezone.now()):
         # Create result
         result = Result()
         result.time = time
         result.check = self
         result.status = status
         result.status_text = status_text
-        result.data = data
         result.maintenance_mode = self.maintenance_mode or self.monitor.maintenance_mode
 
         # Save
@@ -192,7 +137,7 @@ class Check(models.Model):
             return self.display_name
         return self.uuid
 
-
+    
 class Result(models.Model):
     STATUS_CHOICES = (
         ("ok", "OK"),
@@ -200,64 +145,20 @@ class Result(models.Model):
         ("critical", "CRITICAL"),
         ("unknown", "UNKNOWN"),
     )
-    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
     check = models.ForeignKey(Check)
     time = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     status_text = models.CharField(max_length=200)
-    data = models.TextField()
     maintenance_mode = models.BooleanField()
-
-    def save(self, *args, **kwargs):
-        if self.check and self.time:
-            self.uuid = uuid.uuid5(uuid.UUID(hex=self.check.uuid), str(self.time)).hex
-        super(Result, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         return "".join([self.check.get_absolute_url(), "results/", self.uuid, "/"])
 
     class Meta:
         ordering = ("-time",)
-
-
-class Problem(models.Model):
-    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
-    check = models.ForeignKey(Check)
-    time = models.DateTimeField()
-    details = models.TextField()
-
-    def get_absolute_url(self):
-        return "".join([self.check.get_absolute_url(), "problems/", self.uuid, "/"])
-
-
-class ProblemUpdate(models.Model):
-    STATUS_CHOICES = (
-        (1, "Open"),
-        (2, "Acknowledged"),
-        (3, "On Hold"),
-        (4, "Resolved"),
-    )
-    problem = models.ForeignKey(Problem)
-    time = models.DateTimeField()
-    status = models.IntegerField(choices=STATUS_CHOICES)
-    comment = models.TextField()
-
-    class Meta:
-        ordering = ("-time",)
-
-
-class ReportPrototype(models.Model):
-    uuid = models.CharField("UUID", max_length=32, primary_key=True, default=lambda: uuid.uuid4().hex)
-    display_name = models.CharField(max_length=100)
-    monitors = models.ManyToManyField(Monitor, null=True, blank=True)
-    groups = models.ManyToManyField(Group, null=True, blank=True)
-    contacts = models.ManyToManyField(Contact, null=True, blank=True)
-
-    def get_absolute_url(self):
-        return "".join(["/reports/", self.uuid, "/"])
-
-
-class ReportSchedule(models.Model):
+        
+    
+class Report(models.Model):
     SCHEDULE_CHOICES = (
         (1, "Daily"),
         (2, "Weekly"),
@@ -265,15 +166,12 @@ class ReportSchedule(models.Model):
         (4, "Quarterly"),
         (5, "Yearly"),
     )
-    prototype = models.ForeignKey(ReportPrototype)
+    display_name = models.CharField(max_length=100)
+    monitors = models.ManyToManyField(Monitor, null=True, blank=True)
+    groups = models.ManyToManyField(Group, null=True, blank=True)
+    contacts = models.ManyToManyField(Contact, null=True, blank=True)
     schedule = models.IntegerField(choices=SCHEDULE_CHOICES)
-    base_time = models.DateTimeField()
+    base_time = models.DateTimeField(default=timezone.now)
+    last_scheduled_send = models.DateTimeField(null = True)
+    send_oneoff = models.BooleanField(default = False)
 
-
-class Report(models.Model):
-    prototype = models.ForeignKey(ReportPrototype)
-    schedule = models.ForeignKey(ReportSchedule, null=True, blank=True)
-    time = models.DateTimeField()
-
-    class Meta:
-        ordering = ("-time",)
