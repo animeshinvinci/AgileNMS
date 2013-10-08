@@ -14,7 +14,11 @@ class Check(models.Model):
         return self.result_set.filter(time__gt=min_time)
 
     def get_last_result(self):
-        return self.result_set.all()[0]
+        results = self.result_set.all()
+        if len(results) > 0:
+            return results[0]
+        else:
+            return None
 
     def get_status(self):
         # Check if this is disabled
@@ -22,9 +26,10 @@ class Check(models.Model):
             return "disabled"
 
         # Get last result
-        try:
-            last_result = self.get_last_result()
-        except:
+        last_result = self.get_last_result()
+
+        # Check if last result exists
+        if not last_result:
             return "unknown"
 
         # Make sure it was produced in past 10 minutes

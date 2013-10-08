@@ -15,8 +15,13 @@
   
    <h4 style="padding-top: 20px;">Status</h4>
    {% with check.get_last_result as result %}
-    Current status: <span class="status-text-{{ check.get_status }}" style="text-transform: uppercase; font-weight: bold;">{{ check.get_status }}</span><br>
-    Last checked: {{ result.time|naturaltime }}
+    {% if result %}
+     Current status: <span class="status-text-{{ check.get_status }}" style="text-transform: uppercase; font-weight: bold;">{{ result.status }}</span><br>
+     Info: {{ result.status_text }}<br>
+     Last checked: {{ result.time|naturaltime }}
+    {% else %}
+     No results have been collected yet.
+    {% endif %}
    {% endwith %}
   
   </div>
