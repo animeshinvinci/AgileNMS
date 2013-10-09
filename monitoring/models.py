@@ -143,6 +143,9 @@ class Problem(models.Model):
     def get_absolute_url(self):
         return "".join(["/problems/", self.uuid, "/"])
 
+    def __unicode__(self):
+        return self.check.__unicode__() + ": " + self.name
+
     class Meta:
         ordering = ("-start_time",)
 
