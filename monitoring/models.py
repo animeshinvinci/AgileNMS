@@ -132,11 +132,18 @@ class Problem(models.Model):
     send_down_email = models.BooleanField(default=True)
     send_up_email = models.BooleanField(default=False)
 
+    def get_status(self):
+        if not self.end_time is None:
+            return "closed"
+        if self.acknowledged:
+            return "acknowledged"
+        return "unhandled"
+
     def get_absolute_url(self):
         return "".join(["/problems/", self.uuid, "/"])
 
     def __unicode__(self):
-        return self.check.__unicode__() + ": " + self.name
+        return self.name
 
     class Meta:
         ordering = ("-start_time",)

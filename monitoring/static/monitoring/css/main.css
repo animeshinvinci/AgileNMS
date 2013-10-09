@@ -79,3 +79,57 @@
 .status-text-ok:hover {
   color: #356635;
 }
+
+
+
+.problem-status-label-acknowledged {
+  background-color: #428bca;
+}
+
+.problem-status-label-acknowledged[href]:hover,
+.problem-status-label-acknowledged[href]:focus {
+  background-color: #3071a9;
+}
+
+.problem-status-label-closed {
+  background-color: #5cb85c;
+}
+
+.problem-status-label-closed[href]:hover,
+.problem-status-label-closed[href]:focus {
+  background-color: #449d44;
+}
+
+.problem-status-label-unhandled {
+  background-color: #d9534f;
+}
+
+.problem-status-label-unhandled[href]:hover,
+.problem-status-label-unhandled[href]:focus {
+  background-color: #c9302c;
+}
+
+
+.problem-status-text-acknowledged {
+  color: #428bca;
+}
+
+.problem-status-text-acknowledged:hover {
+  color: #3071a9;
+}
+
+.problem-status-text-unhandled {
+  color: #b94a48;
+}
+
+.problem-status-text-unhandled:hover {
+  color: #953b39;
+}
+
+.problem-status-text-closed {
+  color: #468847;
+}
+
+.problem-status-text-closed:hover {
+  color: #356635;
+}

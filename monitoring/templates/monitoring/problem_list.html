@@ -38,6 +38,8 @@
   <thead>
    <tr>
     <th>Name</th>
+    <th>Check</th>
+    <th>Status</th>
    </tr>
   </thead>
    <tbody>
@@ -46,6 +48,12 @@
       <td>
        <a href="{{ problem.get_absolute_url }}">{{ problem }}</a>
       </td>
+      <td>
+       <a href="{{ problem.check.get_absolute_url }}">{{ problem.check }}</a>
+      </td>
+      <td style="text-transform: uppercase"><b>
+       <span class="problem-status-text-{{ problem.get_status }}">{{ problem.get_status }}</span>
+      </b></td>
      </tr>
     {% endfor %}
   </tbody>
