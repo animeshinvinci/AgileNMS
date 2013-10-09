@@ -1,12 +1,30 @@
 from django.db import models
 from django.utils import timezone
+from django.template.defaultfilters import slugify
 import datetime
 import uuid
+
+
+class Group(models.Model):
+    slug = models.CharField(max_length=200, primary_key=True)
+    name = models.CharField(max_length=200)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super(Group, self).save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return "".join(["/groups/", self.slug, "/"])
+
+    def __unicode__(self):
+        return self.name
 
 
 class Check(models.Model):
     uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
     name = models.CharField(max_length=100, blank=True)
+    group = models.ForeignKey(Group, null=True, blank=True)
     url = models.CharField(max_length=300, verbose_name="URL")
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
@@ -143,6 +161,7 @@ class Report(models.Model):
 
     # List of checks to include
     checks = models.ManyToManyField(Check, null=True, blank=True)
+    groups = models.ManyToManyField(Group, null=True, blank=True)
 
     # Schedule
     SCHEDULE_CHOICES = (
