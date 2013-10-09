@@ -36,17 +36,23 @@
       <td>
        <a href="{{ check.get_absolute_url }}">{{ check }}</a>
       </td>
-      {% with check.get_last_result as result %}
-       <td style="padding-top: 3px;">
-        <h4 style="margin: 0;"><span class="label status-label-{{ result.status }}" style="text-transform: uppercase">{{ result.status }}</span></h4>
-       </td>
-       <td>
-        {{ result.status_text }}
-       </td>
-       <td>
-        {{ result.time|naturaltime }}
-       </td>
-      {% endwith %}
+      
+      <td style="padding-top: 3px;">
+       <h4 style="margin: 0;"><span class="label status-label-{{ check.get_status }}" style="text-transform: uppercase">{{ check.get_status }}</span></h4>
+      </td>
+      
+      {% if check.get_status != "unknown" and check.get_status != "disabled" %}
+       {% with check.get_last_result as result %}
+        <td>
+         {{ result.status_text }}
+        </td>
+        <td>
+         {{ result.time|naturaltime }}
+        </td>
+       {% endwith %}
+      {% else %}
+       <td>N/A</td><td>N/A</td>
+      {% endif %}
      </tr>
     {% endfor %}
   </tbody>
