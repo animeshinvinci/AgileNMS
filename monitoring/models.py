@@ -22,7 +22,7 @@ class Group(models.Model):
 
 
 class Check(models.Model):
-    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
+    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True, default=lambda: uuid.uuid4().hex)
     name = models.CharField(max_length=100, blank=True)
     group = models.ForeignKey(Group, null=True, blank=True)
     url = models.CharField(max_length=300, verbose_name="URL")
@@ -85,9 +85,6 @@ class Check(models.Model):
                 problem_obj, created = Problem.objects.get_or_create(check=self, name=problem, end_time=None, defaults={"start_time": time})
 
     def save(self, *args, **kwargs):
-        if not self.uuid:
-            self.uuid = uuid.uuid4().hex
-
         # If disabled or switched to maintenance_mode, mark all problems as resolved but dont send up emails
         # TODO: Stick this into a background cleanup task
         if not self.enabled or self.maintenance_mode:
@@ -111,17 +108,12 @@ class Result(models.Model):
         ("critical", "CRITICAL"),
         ("unknown", "UNKNOWN"),
     )
-    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
+    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True, default=lambda: uuid.uuid4().hex)
     check = models.ForeignKey(Check)
     time = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     status_text = models.CharField(max_length=200, blank=True)
     maintenance_mode = models.BooleanField()
-
-    def save(self, *args, **kwargs):
-        if not self.uuid:
-            self.uuid = uuid.uuid5(uuid.UUID(hex=self.check.uuid), str(self.time)).hex
-        super(Result, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         return "".join(["/results/", self.uuid, "/"])
@@ -152,7 +144,7 @@ class Problem(models.Model):
 
 class Report(models.Model):
     # Basic info
-    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
+    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True, default=lambda: uuid.uuid4().hex)
     name = models.CharField(max_length=100)
     enabled = models.BooleanField(default=True)
 
@@ -170,11 +162,6 @@ class Report(models.Model):
     )
     schedule = models.IntegerField(choices=SCHEDULE_CHOICES)
     start_day = models.DateField()
-
-    def save(self, *args, **kwargs):
-        if not self.uuid:
-            self.uuid = uuid.uuid4().hex
-        super(Report, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         return "".join(["/reports/", self.uuid, "/"])
