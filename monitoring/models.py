@@ -144,7 +144,7 @@ class Problem(models.Model):
     def save(self, *args, **kwargs):
         if not self.uuid:
             self.uuid = uuid.uuid5(uuid.UUID(hex=self.check.uuid), str(self.time)).hex
-        super(Result, self).save(*args, **kwargs)
+        super(Problem, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         return "".join(["/problems/", self.uuid, "/"])
