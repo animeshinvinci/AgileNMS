@@ -61,7 +61,7 @@ class Check(models.Model):
         # Return last results status
         return last_result.status
 
-    def post_result(self, status="unknown", status_text="", time=None):
+    def post_result(self, status="unknown", status_text="", problems=[], time=None):
         # Create result
         result = Result()
         if time is None:
@@ -75,22 +75,24 @@ class Check(models.Model):
         # Save
         result.save()
 
-    def post_problem(self, summary, details=""):
-        # Create problem
-        problem = Problem()
-        if time is None:
-            time = timezone.now()
-        problem.time = time
-        problem.check = self
-        problem.summary = summary
-        problem.details = details
+        # Problems
+        if not self.maintenance_mode:
+            # Any problem that is not in the list is now resolved
+            self.problem_set.filter(end_time=None).exclude(name__in=problems).update(end_time=time, send_up_email=True)
 
-        # Save
-        problem.save()
+            # Make sure all of the problems in the list are recorded
+            for problem in problems:
+                problem_obj, created = Problem.objects.get_or_create(check=self, name=problem, end_time=None, defaults={"start_time": time})
 
     def save(self, *args, **kwargs):
         if not self.uuid:
             self.uuid = uuid.uuid4().hex
+
+        # If disabled or switched to maintenance_mode, mark all problems as resolved but dont send up emails
+        # TODO: Stick this into a background cleanup task
+        if not self.enabled or self.maintenance_mode:
+            self.problem_set.filter(end_time=None).update(end_time=timezone.now())
+
         super(Check, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
@@ -129,28 +131,20 @@ class Result(models.Model):
 
 
 class Problem(models.Model):
-    PROBLEM_STATUS_CHOICES = (
-        (1, "Unhandled"),
-        (2, "Acknowledged"),
-        (3, "Resolved"),
-    )
-    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True)
+    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True, default=lambda: uuid.uuid4().hex)
     check = models.ForeignKey(Check)
-    time = models.DateTimeField()
-    status = models.IntegerField(choices=PROBLEM_STATUS_CHOICES, default=1)
-    summary = models.CharField(max_length=200)
-    details = models.TextField()
-
-    def save(self, *args, **kwargs):
-        if not self.uuid:
-            self.uuid = uuid.uuid5(uuid.UUID(hex=self.check.uuid), str(self.time)).hex
-        super(Problem, self).save(*args, **kwargs)
+    name = models.CharField(max_length=100)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True)
+    acknowledged = models.BooleanField(default=False)
+    send_down_email = models.BooleanField(default=True)
+    send_up_email = models.BooleanField(default=False)
 
     def get_absolute_url(self):
         return "".join(["/problems/", self.uuid, "/"])
 
     class Meta:
-        ordering = ("-time",)
+        ordering = ("-start_time",)
 
 
 class Report(models.Model):
