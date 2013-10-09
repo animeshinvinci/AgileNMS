@@ -134,7 +134,7 @@ class Problem(models.Model):
 
     def get_status(self):
         if not self.end_time is None:
-            return "closed"
+            return "resolved"
         if self.acknowledged:
             return "acknowledged"
         return "unhandled"

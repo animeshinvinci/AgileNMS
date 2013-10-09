@@ -91,12 +91,12 @@
   background-color: #3071a9;
 }
 
-.problem-status-label-closed {
+.problem-status-label-resolved {
   background-color: #5cb85c;
 }
 
-.problem-status-label-closed[href]:hover,
-.problem-status-label-closed[href]:focus {
+.problem-status-label-resolved[href]:hover,
+.problem-status-label-resolved[href]:focus {
   background-color: #449d44;
 }
 
@@ -126,10 +126,10 @@
   color: #953b39;
 }
 
-.problem-status-text-closed {
+.problem-status-text-resolved {
   color: #468847;
 }
 
-.problem-status-text-closed:hover {
+.problem-status-text-resolved:hover {
   color: #356635;
 }
