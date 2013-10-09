@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block title %}Problem List{% endblock %}
 
@@ -9,37 +10,21 @@
 {% endblock %}
 
 {% block content %}
- <div class="navbar navbar-default">
-  <div class="navbar-header">
-   <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".problems-navbar-collapse">
-    <span class="sr-only">Toggle navigation</span>
-    <span class="icon-bar"></span>
-    <span class="icon-bar"></span>
-    <span class="icon-bar"></span>
-   </button>
-   <span class="navbar-brand">Problems</span>
-  </div>
-  <div class="collapse navbar-collapse problems-navbar-collapse">
-   <div class="navbar-right">
-    <button type="button" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-refresh"></span></button>
-   </div>
-   <form class="navbar-form navbar-right">
-    <div class="input-group">
-     <span class="input-group-addon">
-      <span class="glyphicon glyphicon-search"></span>
-     </span>
-     <input type="text" class="form-control" placeholder="Search">
-    </div>
-   </form>
-  </div>
- </div>
+ <h3 class="pull-right" style="margin-top: 20px;">
+   <a href="/problems/resolved/" class="label problem-status-label-resolved">0</a>
+   <a href="/problems/acknowledged/" class="label problem-status-label-acknowledged">0</a>
+   <a href="/problems/unhandled/" class="label problem-status-label-unhandled">0</a>
+ </h3>
+ 
+ <h3>Problems</h3>
 
  <table class="table table-striped">
   <thead>
    <tr>
-    <th>Name</th>
-    <th>Check</th>
-    <th>Status</th>
+    <th style="width: 40%">Name</th>
+    <th style="width: 20%">Status</th>
+    <th style="width: 20%">Start Time</th>
+    <th style="width: 20%">End Time</th>
    </tr>
   </thead>
    <tbody>
@@ -48,12 +33,15 @@
       <td>
        <a href="{{ problem.get_absolute_url }}">{{ problem }}</a>
       </td>
-      <td>
-       <a href="{{ problem.check.get_absolute_url }}">{{ problem.check }}</a>
-      </td>
       <td style="text-transform: uppercase"><b>
        <span class="problem-status-text-{{ problem.get_status }}">{{ problem.get_status }}</span>
       </b></td>
+      <td>
+       {{ problem.start_time|naturaltime }}
+      </td>
+      <td>
+       {{ problem.end_time|naturaltime }}
+      </td>
      </tr>
     {% endfor %}
   </tbody>

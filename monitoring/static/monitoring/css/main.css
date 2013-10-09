@@ -1,3 +1,7 @@
+body {
+    min-width: 550px;
+}
+
 .status-label-disabled {
   background-color: #999999;
 }

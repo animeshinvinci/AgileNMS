@@ -10,13 +10,11 @@
 {% endblock %}
 
 {% block content %}
- <div class="row">
-  <div class="col-lg-9">
-   <h3>Report: {{ report }}</h3>
-  </div>
-  <div class="col-lg-3">
-   <button type="button" class="btn btn-primary navbar-btn" onclick="javascript:window.location='{{ report.get_absolute_url }}update/';"><span class="glyphicon glyphicon-pencil"></span> Edit</button>
-   <button type="button" class="btn btn-danger navbar-btn" onclick="javascript:window.location='{{ report.get_absolute_url }}delete/';"><span class="glyphicon glyphicon-remove"></span> Delete</button>
-  </div>
- </div>
+ <h3 class="pull-right" style="margin-top: 20px;">
+  <a href="{{ report.get_absolute_url }}update/" class="label label-primary"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+  <a href="{{ report.get_absolute_url }}delete/" class="label label-danger"><span class="glyphicon glyphicon-remove"></span> Delete</a>
+ </h3>
+ 
+ <h3>Report: {{ report }}</h3>
+ <p>Report details here</p>
 {% endblock %}

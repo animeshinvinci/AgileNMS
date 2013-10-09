@@ -143,7 +143,7 @@ class Problem(models.Model):
         return "".join(["/problems/", self.uuid, "/"])
 
     def __unicode__(self):
-        return self.name
+        return self.check.__unicode__() + " - " + self.name
 
     class Meta:
         ordering = ("-start_time",)

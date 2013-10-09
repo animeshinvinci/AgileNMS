@@ -10,12 +10,6 @@
 {% endblock %}
 
 {% block content %}
- <div class="row">
-  <div class="col-lg-9">
-   <h3>Problem: {{ problem }}</h3>
-   <p>More info about this problem will go here</p>
-  </div>
-  <div class="col-lg-3">
-  </div>
- </div>
+ <h3>Problem: {{ problem }} <sup><span class="label problem-status-label-{{ problem.get_status }}" style="text-transform: uppercase;">{{ problem.get_status }}</span></sup></h3>
+ <p>More info about this problem will go here</p>
 {% endblock %}
