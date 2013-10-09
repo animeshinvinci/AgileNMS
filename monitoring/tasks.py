@@ -5,11 +5,11 @@ import models
 
 
 def dummy_handler(url):
-    return "ok", "Hello! (" + url + ")"
+    return "ok", "Hello! (" + url + ")", []
 
 
 def dummycritical_handler(url):
-    return "critical", "Hello! (" + url + ")"
+    return "critical", "Hello! (" + url + ")", ["In Critical State"]
 
 
 def http_handler(url):
@@ -19,7 +19,7 @@ def http_handler(url):
     try:
         response = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        return "critical", "Could not connect"
+        return "critical", "Could not connect", ["Could not connect"]
 
     # Work out status code
     status = "ok"
@@ -30,15 +30,15 @@ def http_handler(url):
         status = "critical"
 
     # Return status code and text
-    return status, "".join(["HTTP ", str(response.status_code), " ", response.reason, " (", str(response_time), "ms)"])
+    return status, "".join(["HTTP ", str(response.status_code), " ", response.reason, " (", str(response_time), "ms)"]), []
 
 
 def ping_handler(url):
-    return "unknown", "Ping Handler not implemented"
+    return "unknown", "Ping Handler not implemented", []
 
 
 def tcp_handler(url):
-    return "unknown", "TCP Handler not implemented"
+    return "unknown", "TCP Handler not implemented", []
 
 
 handlers = {
@@ -58,7 +58,8 @@ def run_checks():
     for check in checks:
         parsed_url = urlparse(check.url)
         if parsed_url.scheme in handlers:
-            status, status_text = handlers[parsed_url.scheme](check.url)
-            check.post_result(status=status, status_text=status_text)
+            status, status_text, problems = handlers[parsed_url.scheme](check.url)
+            check.post_result(status=status, status_text=status_text, problems=problems)
         else:
-            logging.error("Unrecognised URL scheme: " + parsed_url.scheme)
+            error_text = "Unrecognised URL scheme: " + parsed_url.scheme
+            check.post_result(status="unknown", status_text=error_text, problems=[error_text])
