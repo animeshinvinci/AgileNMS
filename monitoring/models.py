@@ -57,14 +57,13 @@ class Check(models.Model):
         # Save
         result.save()
 
-    def post_problem(self, major, summary, details=""):
+    def post_problem(self, summary, details=""):
         # Create problem
         problem = Problem()
         if time is None:
             time = timezone.now()
         problem.time = time
         problem.check = self
-        problem.major = major
         problem.summary = summary
         problem.details = details
 
@@ -121,7 +120,6 @@ class Problem(models.Model):
     check = models.ForeignKey(Check)
     time = models.DateTimeField()
     status = models.IntegerField(choices=PROBLEM_STATUS_CHOICES, default=1)
-    major = models.BooleanField()
     summary = models.CharField(max_length=200)
     details = models.TextField()
 
