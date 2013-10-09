@@ -4,6 +4,14 @@ from celery import task
 import models
 
 
+def dummy_handler(url):
+    return "ok", "Hello! (" + url + ")"
+
+
+def dummycritical_handler(url):
+    return "critical", "Hello! (" + url + ")"
+
+
 def http_handler(url):
     import requests
 
@@ -34,6 +42,8 @@ def tcp_handler(url):
 
 
 handlers = {
+    "dummy": dummy_handler,
+    "dummycritical": dummycritical_handler,
     "http": http_handler,
     "https": http_handler,
 }
