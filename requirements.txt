@@ -6,6 +6,7 @@ billiard==2.7.3.32
 celery==3.0.23
 distribute==0.6.34
 dj-database-url==0.2.2
+django-bootstrap-form==3.0
 django-celery==3.0.23
 kombu==2.5.14
 python-dateutil==2.1
