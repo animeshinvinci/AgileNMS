@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load humanize %}
 
-{% block title %}Check Detail{% endblock %}
+{% block title %}Check: {{ check }}{% endblock %}
 
 {% block checks_navitem_classes %}active{% endblock %}
 
@@ -12,7 +12,7 @@
 {% block content %}
  <div class="row">
   <div class="col-lg-9">
-   <h3>{{ check }} <sup><span class="label status-label-{{ check.get_status }}" style="text-transform: uppercase;">{{ check.get_status }}</span></sup></h3>
+   <h3>Check: {{ check }} <sup><span class="label status-label-{{ check.get_status }}" style="text-transform: uppercase;">{{ check.get_status }}</span></sup></h3>
    <p>URL: {{ check.url }}</p>
   
    <h4 style="padding-top: 20px;">Status</h4>
@@ -28,7 +28,6 @@
   
   </div>
   <div class="col-lg-3">
-   <button type="button" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-refresh"></span></button>
    <button type="button" class="btn btn-primary navbar-btn" onclick="javascript:window.location='{{ check.get_absolute_url }}update/';"><span class="glyphicon glyphicon-pencil"></span> Edit</button>
    <button type="button" class="btn btn-danger navbar-btn" onclick="javascript:window.location='{{ check.get_absolute_url }}delete/';"><span class="glyphicon glyphicon-remove"></span> Delete</button>
   </div>

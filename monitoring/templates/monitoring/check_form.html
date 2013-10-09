@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load bootstrap %}
 
-{% block title %}Check Form{% endblock %}
+{% block title %}{% if check %}Edit Check: {{ check }}{% else %}New Check{% endif %}{% endblock %}
 
 {% block checks_navitem_classes %}active{% endblock %}
 
@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block content %}
- <h3>{% if check %}Edit {{ check }}{% else %}New Check{% endif %}</h3>
+ <h3>{% if check %}Edit Check: {{ check }}{% else %}New Check{% endif %}</h3>
 
  <div style="max-width: 400px;">
   <form action="#" method="post">
