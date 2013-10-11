@@ -27,7 +27,7 @@ def http_handler(url):
     response_time = int(response.elapsed.total_seconds() * 1000)
     if response_time > 1000:
         status = "warning"
-    if response.status_code >= 400:
+    if response.status_code >= 400 and response.status_code != 401:
         status = "critical"
         problems.append("HTTP error")
 
