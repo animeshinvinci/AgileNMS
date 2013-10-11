@@ -14,23 +14,25 @@ def dummycritical_handler(url):
 
 def http_handler(url):
     import requests
-
-    # Attempt to get url
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10, verify=False)
     except requests.exceptions.ConnectionError as e:
-        return "critical", "Could not connect", ["Could not connect"]
+        return "critical", "Could not connect", ["Connection error"]
+    except requests.exceptions.Timeout as e:
+        return "critical", "Request timed out", ["Connection error"]
 
-    # Work out status code
+    # Work out status
     status = "ok"
+    problems = []
     response_time = int(response.elapsed.total_seconds() * 1000)
     if response_time > 1000:
         status = "warning"
     if response.status_code >= 400:
         status = "critical"
+        problems.append("HTTP error")
 
     # Return status code and text
-    return status, "".join(["HTTP ", str(response.status_code), " ", response.reason, " (", str(response_time), "ms)"]), []
+    return status, "".join(["HTTP ", str(response.status_code), " ", response.reason, " (", str(response_time), "ms)"]), problems
 
 
 def ping_handler(url):
