@@ -125,6 +125,6 @@ from datetime import timedelta
 CELERYBEAT_SCHEDULE = {
     "run-checks-every-5-minutes": {
         "task": "monitoring.tasks.run_checks",
-        "schedule": timedelta(seconds=5),
+        "schedule": timedelta(minutes=5),
     },
 }
