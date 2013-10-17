@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+
+{% block title %}Group List{% endblock %}
+
+{% block checks_navitem_classes %}active{% endblock %}
+
+{% block extra_head %}
+ <link href="/static/monitoring/css/main.css" rel="stylesheet" media="screen">
+{% endblock %}
+
+{% block content %}
+ <h3 class="pull-right" style="margin-top: 20px;">
+  <a href="/checks/groups/create/" class="label label-primary"><span class="glyphicon glyphicon-plus"></span> New Group</a>
+ </h3>
+
+ <h3>Groups</h3>
+
+ <table class="table table-striped">
+  <thead>
+   <tr>
+    <th>Name</th>
+   </tr>
+  </thead>
+   <tbody>
+    {% for group in group_list %}
+     <tr>
+      <td>
+       <a href="{{ group.get_absolute_url }}">{{ group }}</a>
+      </td>
+     </tr>
+    {% endfor %}
+  </tbody>
+ </table>
+{% endblock %}

@@ -15,7 +15,7 @@ class Group(models.Model):
         super(Group, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return "".join(["/groups/", self.slug, "/"])
+        return "".join(["/checks/groups/", self.slug, "/"])
 
     def __unicode__(self):
         return self.name
@@ -24,7 +24,7 @@ class Group(models.Model):
 class Check(models.Model):
     uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True, default=lambda: uuid.uuid4().hex)
     name = models.CharField(max_length=100, blank=True)
-    group = models.ForeignKey(Group, null=True, blank=True)
+    group = models.ForeignKey(Group, default="default")
     url = models.CharField(max_length=300, verbose_name="URL")
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)

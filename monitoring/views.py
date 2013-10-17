@@ -28,6 +28,30 @@ class CheckDeleteView(DeleteView):
 
 
 
+class GroupListView(ListView):
+    model = models.Group
+
+
+class GroupDetailView(DetailView):
+    model = models.Group
+
+
+class GroupCreateView(CreateView):
+    model = models.Group
+    form_class = forms.GroupForm
+
+
+class GroupUpdateView(CreateView):
+    model = models.Group
+    form_class = forms.GroupForm
+
+
+class GroupDeleteView(DeleteView):
+    model = models.Group
+    success_url = "/checks/groups/"
+
+
+
 class ProblemListView(ListView):
     model = models.Problem
 

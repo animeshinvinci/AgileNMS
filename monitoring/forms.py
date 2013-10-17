@@ -8,6 +8,12 @@ class CheckForm(forms.ModelForm):
         exclude = ("uuid", )
 
 
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = models.Group
+        exclude = ("slug", )
+
+
 class ReportForm(forms.ModelForm):
     class Meta:
         model = models.Report

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load bootstrap %}
+
+{% block title %}{% if group %}Edit Group: {{ group }}{% else %}New Group{% endif %}{% endblock %}
+
+{% block checks_navitem_classes %}active{% endblock %}
+
+{% block extra_head %}
+ <link href="/static/monitoring/css/main.css" rel="stylesheet" media="screen">
+{% endblock %}
+
+{% block content %}
+ <h3>{% if group %}Edit Group: {{ group }}{% else %}New Group{% endif %}</h3>
+
+ <div style="max-width: 400px;">
+  <form action="#" method="post">
+   {% csrf_token %}
+   {{ form|bootstrap }}
+   <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-save"></span> Save</button>
+  </form>
+ </div>
+{% endblock %}

@@ -16,7 +16,16 @@
   <a href="/checks/critical/" class="label status-label-critical">0</a>
   <a href="/checks/unknown/" class="label status-label-unknown">0</a>
   <a href="/checks/disabled/" class="label status-label-disabled">0</a>
-  <a href="/checks/create/" class="label label-primary"><span class="glyphicon glyphicon-plus"></span> New Check</a>
+  
+  <div class="btn-group">
+   <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+    <span class="glyphicon glyphicon-plus"></span> Create <span class="caret"></span>
+   </button>
+   <ul class="dropdown-menu" role="menu">
+    <li><a href="/checks/create/">Check</a></li>
+    <li><a href="/checks/groups/create/">Group</a></li>
+   </ul>
+  </div>
  </h3>
 
  <h3>Checks</h3>

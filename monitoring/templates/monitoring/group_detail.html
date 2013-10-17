@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Group: {{ group }}{% endblock %}
+
+{% block checks_navitem_classes %}active{% endblock %}
+
+{% block extra_head %}
+ <link href="/static/monitoring/css/main.css" rel="stylesheet" media="screen">
+{% endblock %}
+
+{% block content %}
+ <h3 class="pull-right" style="margin-top: 20px;">
+  <a href="{{ group.get_absolute_url }}update/" class="label label-primary"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+  <a href="{{ group.get_absolute_url }}delete/" class="label label-danger"><span class="glyphicon glyphicon-remove"></span> Delete</a>
+ </h3>
+
+ <h3>Group: {{ group }}</h3>
+
+
+{% endblock %}
