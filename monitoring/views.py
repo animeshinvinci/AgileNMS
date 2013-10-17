@@ -5,7 +5,8 @@ import models, forms
 
 
 class CheckListView(ListView):
-    model = models.Check
+    model = models.Group
+    template_name = "monitoring/check_list_by_group.html"
 
 
 class CheckDetailView(DetailView):
@@ -48,7 +49,7 @@ class GroupUpdateView(CreateView):
 
 class GroupDeleteView(DeleteView):
     model = models.Group
-    success_url = "/checks/groups/"
+    success_url = "/checks/"
 
 
 

@@ -30,17 +30,24 @@
 
  <h3>Checks</h3>
 
- <table class="table table-striped">
-  <thead>
-   <tr>
-    <th style="width: 40%">Name</th>
-    <th style="width: 10%">Status</th>
-    <th style="width: 25%">Info</th>
-    <th style="width: 25%">Last checked</th>
-   </tr>
-  </thead>
-   <tbody>
-    {% for check in check_list %}
+ {% for group in group_list %}
+  <div style="padding-left: 20px;">
+   <h4>{{ group }} <sup><a href="{{ group.get_absolute_url }}">Info</a></sup></h4>
+   
+   {% for check in group.check_set.all %}
+    {% if forloop.first %}
+     <table class="table table-striped">
+      <thead>
+       <tr>
+        <th style="width: 40%">Name</th>
+        <th style="width: 10%">Status</th>
+        <th style="width: 25%">Info</th>
+        <th style="width: 25%">Last checked</th>
+       </tr>
+      </thead>
+      <tbody>
+     {% endif %}
+     
      <tr>
       <td>
        <a href="{{ check.get_absolute_url }}">{{ check }}</a>
@@ -63,7 +70,17 @@
        <td>N/A</td><td>N/A</td>
       {% endif %}
      </tr>
-    {% endfor %}
-  </tbody>
- </table>
+     
+     {% if forloop.first %}
+      </tbody>
+      </table>
+     {% endif %}
+   {% empty %}
+    <p>There are no checks in this group</p>
+   {% endfor %}
+
+  </div>
+
+  {% if not forloop.last %}<hr>{% endif %}
+ {% endfor %}
 {% endblock %}

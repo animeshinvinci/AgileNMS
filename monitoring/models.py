@@ -24,7 +24,7 @@ class Group(models.Model):
 class Check(models.Model):
     uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True, default=lambda: uuid.uuid4().hex)
     name = models.CharField(max_length=100, blank=True)
-    group = models.ForeignKey(Group, default="default")
+    group = models.ForeignKey(Group)
     url = models.CharField(max_length=300, verbose_name="URL")
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
