@@ -5,6 +5,24 @@ import datetime
 import uuid
 
 
+STATUS_CHOICES = (
+    ("ok", "OK"),
+    ("warning", "WARNING"),
+    ("critical", "CRITICAL"),
+    ("unknown", "UNKNOWN"),
+    ("disabled", "DISABLED"),
+)
+
+
+REPORT_SCHEDULE_CHOICES = (
+    ("1 day", "Daily"),
+    ("7 day", "Weekly"),
+    ("1 month", "Monthly"),
+    ("3 month", "Quarterly"),
+    ("1 year", "Yearly"),
+)
+
+
 class Group(models.Model):
     slug = models.CharField(max_length=200, primary_key=True)
     name = models.CharField(max_length=200)
@@ -25,7 +43,7 @@ class Check(models.Model):
     uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True, default=lambda: uuid.uuid4().hex)
     name = models.CharField(max_length=100, blank=True)
     group = models.ForeignKey(Group)
-    url = models.CharField(max_length=300, verbose_name="URL")
+    url = models.CharField("URL", max_length=300)
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
     passive = models.BooleanField(default=False)
@@ -77,12 +95,12 @@ class Check(models.Model):
 
         # Problems
         if not self.maintenance_mode:
-            # Any problem that is not in the list is now resolved
+            # Any problems that are not in the list are now resolved
             self.problem_set.filter(end_time=None).exclude(name__in=problems).update(end_time=time, send_up_email=True)
 
-            # Make sure all of the problems in the list are recorded
+            # Make sure that all of the problems in the list are recorded
             for problem in problems:
-                problem_obj, created = Problem.objects.get_or_create(check=self, name=problem, end_time=None, defaults={"start_time": time})
+                Problem.objects.get_or_create(check=self, name=problem, end_time=None, defaults={"start_time": time})
 
     def save(self, *args, **kwargs):
         # If disabled or switched to maintenance_mode, mark all problems as resolved but dont send up emails
@@ -102,12 +120,6 @@ class Check(models.Model):
 
 
 class Result(models.Model):
-    STATUS_CHOICES = (
-        ("ok", "OK"),
-        ("warning", "WARNING"),
-        ("critical", "CRITICAL"),
-        ("unknown", "UNKNOWN"),
-    )
     uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True, default=lambda: uuid.uuid4().hex)
     check = models.ForeignKey(Check)
     time = models.DateTimeField()
@@ -160,15 +172,8 @@ class Report(models.Model):
     groups = models.ManyToManyField(Group, null=True, blank=True)
 
     # Schedule
-    SCHEDULE_CHOICES = (
-        (1, "Daily"),
-        (2, "Weekly"),
-        (3, "Monthly"),
-        (4, "Quarterly"),
-        (5, "Yearly"),
-    )
-    schedule = models.IntegerField(choices=SCHEDULE_CHOICES)
-    start_day = models.DateField()
+    schedule = models.CharField(max_length=20, choices=REPORT_SCHEDULE_CHOICES)
+    start_day = models.DateField(default=datetime.date.today)
 
     def get_absolute_url(self):
         return "".join(["/reports/", self.uuid, "/"])
