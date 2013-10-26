@@ -90,3 +90,29 @@ class DatabaseTests(unittest.TestCase):
         # Both problems should be re added but in different objects
         self.assertEqual(check.problem_set.count(), 5)
         self.assertEqual(check.problem_set.filter(end_time=None).count(), 2)
+
+    def test_report(self):
+        # Create a report
+        report = models.Report()
+        report.name = "Test"
+        report.schedule = "1 month"
+        report.start_date = datetime.date(2013, 10, 26)
+        report.save()
+
+        # Check start and end dates
+        report_dict = report.generate(1)
+        self.assertEqual(report_dict["start_date"], datetime.date(2013, 11, 26))
+        self.assertEqual(report_dict["end_date"], datetime.date(2013, 12, 25))
+        self.assertEqual(report_dict["total_days"], 30)
+        report_dict = report.generate(2)
+        self.assertEqual(report_dict["start_date"], datetime.date(2013, 12, 26))
+        self.assertEqual(report_dict["end_date"], datetime.date(2014, 1, 25))
+        self.assertEqual(report_dict["total_days"], 31)
+        report_dict = report.generate(3)
+        self.assertEqual(report_dict["start_date"], datetime.date(2014, 1, 26))
+        self.assertEqual(report_dict["end_date"], datetime.date(2014, 2, 25))
+        self.assertEqual(report_dict["total_days"], 31)
+        report_dict = report.generate(4)
+        self.assertEqual(report_dict["start_date"], datetime.date(2014, 2, 26))
+        self.assertEqual(report_dict["end_date"], datetime.date(2014, 3, 25))
+        self.assertEqual(report_dict["total_days"], 28)
