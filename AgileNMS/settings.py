@@ -122,9 +122,19 @@ CELERY_ALWAYS_EAGER = DEBUG
 
 from datetime import timedelta
 
-CELERYBEAT_SCHEDULE = {
-    "run-checks-every-5-minutes": {
-        "task": "monitoring.tasks.run_checks",
-        "schedule": timedelta(minutes=5),
-    },
-}
+if not DEBUG:
+    MONITORING_CHECKRUNNER_TIMEOUT = 120
+    CELERYBEAT_SCHEDULE = {
+        "run-checks-every-5-minutes": {
+            "task": "monitoring.tasks.run_checks",
+            "schedule": timedelta(minutes=5),
+        },
+    }
+else:
+    MONITORING_CHECKRUNNER_TIMEOUT = 4
+    CELERYBEAT_SCHEDULE = {
+        "run-checks-every-5-minutes": {
+            "task": "monitoring.tasks.run_checks",
+            "schedule": timedelta(seconds=5),
+        },
+    }

@@ -69,9 +69,6 @@ def run_checks():
     # Make task group
     task_group = group([run_check.s(check.uuid, check.url) for check in checks])
 
-    # Get time
-    run_time = timezone.now().isoformat()
-
     # Run tasks
     async_results = task_group.apply_async()
 
@@ -86,16 +83,16 @@ def run_checks():
     r = redis.Redis()
     r.mset({
         "check:" + result[0] + ".status": json.dumps({
-            "status": result[1][0],
-            "status_text": result[1][1],
-            "problems": result[1][2],
-            "masked_problems": result[1][3],
+            "status": result[2][0],
+            "status_text": result[2][1],
+            "problems": result[2][2],
+            "masked_problems": result[2][3],
             "metrics": [{
                     "name": metric[0],
                     "value": metric[1]
-                } for metric in result[1][4]
+                } for metric in result[2][4]
             ],
-            "time": run_time,
+            "time": result[1],
         }) for result in results
     })
 
@@ -104,8 +101,9 @@ def run_checks():
 def run_check(uuid, url):
     # Run
     parsed_url = urlparse(url)
+    run_time = timezone.now().isoformat()
     if parsed_url.scheme in handlers:
-        return uuid, handlers[parsed_url.scheme](url)
+        return uuid, run_time, handlers[parsed_url.scheme](url)
     else:
         error_text = "Unrecognised URL scheme: " + parsed_url.scheme
-        return uuid, ("unknown", error_text, [error_text]), [], []
+        return uuid, run_time, ("unknown", error_text, [error_text], [], [])
