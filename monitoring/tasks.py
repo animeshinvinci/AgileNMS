@@ -1,5 +1,6 @@
 from urlparse import urlparse
 from django.utils import timezone
+from django.conf import settings
 import logging
 from celery import task, group
 import models
@@ -73,7 +74,8 @@ def run_checks():
     async_results = task_group.apply_async()
 
     # Wait for results
-    time.sleep(4)
+    timeout = settings.get("MONITORING_CHECKRUNNER_TIMEOUT", 120)
+    time.sleep(timeout)
 
     # Get results
     results = [result.get() for result in async_results.results if result.ready()]
