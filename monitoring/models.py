@@ -2,8 +2,11 @@ from django.db import models
 from django.utils import timezone
 from django.template.defaultfilters import slugify
 from dateutil.relativedelta import relativedelta
+import dateutil.parser
 import datetime
 import uuid
+import redis
+import json
 
 
 STATUS_CHOICES = (
@@ -49,14 +52,13 @@ class Check(models.Model):
     maintenance_mode = models.BooleanField(default=False)
     passive = models.BooleanField(default=False)
 
-    def get_recent_results(self, max_age=datetime.timedelta(minutes=10)):
-        min_time = timezone.now() - max_age
-        return self.result_set.filter(time__gt=min_time)
-
     def get_last_result(self):
-        results = self.result_set.all()
-        if len(results) > 0:
-            return results[0]
+        r = redis.StrictRedis()
+        result_json = r.get("check:" + self.uuid + ".status")
+        if result_json:
+            result = json.loads(result_json)
+            result["time"] = dateutil.parser.parse(result["time"])
+            return result
         else:
             return None
 
@@ -74,42 +76,11 @@ class Check(models.Model):
 
         # Make sure it was produced in past 10 minutes
         min_time = timezone.now() - datetime.timedelta(minutes=10)
-        if last_result.time < min_time:
+        if last_result["time"] < min_time:
             return "unknown"
 
         # Return last results status
-        return last_result.status
-
-    def post_result(self, status="unknown", status_text="", problems=[], time=None):
-        # Create result
-        result = Result()
-        if time is None:
-            time = timezone.now()
-        result.time = time
-        result.check = self
-        result.status = status
-        result.status_text = status_text
-        result.maintenance_mode = self.maintenance_mode
-
-        # Save
-        result.save()
-
-        # Problems
-        if not self.maintenance_mode:
-            # Any problems that are not in the list are now resolved
-            self.problem_set.filter(end_time=None).exclude(name__in=problems).update(end_time=time, send_up_email=True)
-
-            # Make sure that all of the problems in the list are recorded
-            for problem in problems:
-                Problem.objects.get_or_create(check=self, name=problem, end_time=None, defaults={"start_time": time})
-
-    def save(self, *args, **kwargs):
-        # If disabled or switched to maintenance_mode, mark all problems as resolved but dont send up emails
-        # TODO: Stick this into a background cleanup task
-        if not self.enabled or self.maintenance_mode:
-            self.problem_set.filter(end_time=None).update(end_time=timezone.now())
-
-        super(Check, self).save(*args, **kwargs)
+        return last_result["status"]
 
     def get_absolute_url(self):
         return "".join(["/checks/", self.uuid, "/"])
@@ -118,21 +89,6 @@ class Check(models.Model):
         if self.name:
             return self.name
         return self.url
-
-
-class Result(models.Model):
-    uuid = models.CharField("UUID", max_length=32, primary_key=True, blank=True, default=lambda: uuid.uuid4().hex)
-    check = models.ForeignKey(Check)
-    time = models.DateTimeField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
-    status_text = models.CharField(max_length=200, blank=True)
-    maintenance_mode = models.BooleanField()
-
-    def get_absolute_url(self):
-        return "".join(["/results/", self.uuid, "/"])
-
-    class Meta:
-        ordering = ("-time",)
 
 
 class Problem(models.Model):

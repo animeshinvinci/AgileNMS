@@ -1,15 +1,19 @@
 from urlparse import urlparse
+from django.utils import timezone
 import logging
-from celery import task
+from celery import task, group
 import models
+import time
+import redis
+import json
 
 
 def dummy_handler(url):
-    return "ok", "Hello! (" + url + ")", []
+    return "ok", "Hello! (" + url + ")", [], [], []
 
 
 def dummycritical_handler(url):
-    return "critical", "Hello! (" + url + ")", ["In Critical State"]
+    return "critical", "Hello! (" + url + ")", ["In Critical State"], [], []
 
 
 def http_handler(url):
@@ -17,13 +21,14 @@ def http_handler(url):
     try:
         response = requests.get(url, timeout=10, verify=False)
     except requests.exceptions.ConnectionError as e:
-        return "critical", "Could not connect", ["Connection error"]
+        return "critical", "Could not connect", ["Connection error"], ["HTTP error"], []
     except requests.exceptions.Timeout as e:
-        return "critical", "Request timed out", ["Connection error"]
+        return "critical", "Request timed out", ["Connection error"], ["HTTP error"], []
 
     # Work out status
     status = "ok"
     problems = []
+    masked_problems = []
     response_time = int(response.elapsed.total_seconds() * 1000)
     if response_time > 1000:
         status = "warning"
@@ -31,16 +36,21 @@ def http_handler(url):
         status = "critical"
         problems.append("HTTP error")
 
+    # Metrics
+    metrics = [
+        ("Response time", response_time),
+    ]
+
     # Return status code and text
-    return status, "".join(["HTTP ", str(response.status_code), " ", response.reason, " (", str(response_time), "ms)"]), problems
+    return status, "".join(["HTTP ", str(response.status_code), " ", response.reason, " (", str(response_time), "ms)"]), problems, masked_problems, metrics
 
 
 def ping_handler(url):
-    return "unknown", "Ping Handler not implemented", []
+    return "unknown", "Ping Handler not implemented", [], [], []
 
 
 def tcp_handler(url):
-    return "unknown", "TCP Handler not implemented", []
+    return "unknown", "TCP Handler not implemented", [], [], []
 
 
 handlers = {
@@ -56,12 +66,46 @@ def run_checks():
     # Get check list
     checks = models.Check.objects.filter(enabled=True, passive=False)
 
-    # Loop through checks and run them
-    for check in checks:
-        parsed_url = urlparse(check.url)
-        if parsed_url.scheme in handlers:
-            status, status_text, problems = handlers[parsed_url.scheme](check.url)
-            check.post_result(status=status, status_text=status_text, problems=problems)
-        else:
-            error_text = "Unrecognised URL scheme: " + parsed_url.scheme
-            check.post_result(status="unknown", status_text=error_text, problems=[error_text])
+    # Make task group
+    task_group = group([run_check.s(check.uuid, check.url) for check in checks])
+
+    # Get time
+    run_time = timezone.now().isoformat()
+
+    # Run tasks
+    async_results = task_group.apply_async()
+
+    # Wait for results
+    time.sleep(4)
+
+    # Get results
+    results = [result.get() for result in async_results.results if result.ready()]
+    async_results.revoke(terminate=True)
+
+    # Put results into redis
+    r = redis.Redis()
+    r.mset({
+        "check:" + result[0] + ".status": json.dumps({
+            "status": result[1][0],
+            "status_text": result[1][1],
+            "problems": result[1][2],
+            "masked_problems": result[1][3],
+            "metrics": [{
+                    "name": metric[0],
+                    "value": metric[1]
+                } for metric in result[1][4]
+            ],
+            "time": run_time,
+        }) for result in results
+    })
+
+
+@task()
+def run_check(uuid, url):
+    # Run
+    parsed_url = urlparse(url)
+    if parsed_url.scheme in handlers:
+        return uuid, handlers[parsed_url.scheme](url)
+    else:
+        error_text = "Unrecognised URL scheme: " + parsed_url.scheme
+        return uuid, ("unknown", error_text, [error_text]), [], []
