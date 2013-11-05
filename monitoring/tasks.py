@@ -9,12 +9,12 @@ import redis
 import json
 
 
-def dummy_handler(url):
-    return "ok", "Hello! (" + url + ")", [], [], []
+def alwaysok_handler(url):
+    return "ok", "Hello!", [], [], []
 
 
-def dummycritical_handler(url):
-    return "critical", "Hello! (" + url + ")", ["In Critical State"], [], []
+def alwayscritical_handler(url):
+    return "critical", "Hello!", ["Critical"], [], []
 
 
 def http_handler(url):
@@ -55,8 +55,8 @@ def tcp_handler(url):
 
 
 handlers = {
-    "dummy": dummy_handler,
-    "dummycritical": dummycritical_handler,
+    "alwaysok": alwaysok_handler,
+    "alwayscritical": alwayscritical_handler,
     "http": http_handler,
     "https": http_handler,
 }
@@ -65,16 +65,16 @@ handlers = {
 @task()
 def run_checks():
     # Get check list
-    checks = models.Check.objects.filter(enabled=True, passive=False)
+    checks = models.Check.objects.filter(enabled=True)
 
     # Make task group
-    task_group = group([run_check.s(check.uuid, check.url) for check in checks])
+    task_group = group([run_check.s(check.redis_key, check.url) for check in checks])
 
     # Run tasks
     async_results = task_group.apply_async()
 
     # Wait for results
-    timeout = settings.get("MONITORING_CHECKRUNNER_TIMEOUT", 120)
+    timeout = getattr(settings, "MONITORING_CHECKRUNNER_TIMEOUT", 120)
     time.sleep(timeout)
 
     # Get results
@@ -84,7 +84,7 @@ def run_checks():
     # Put results into redis
     r = redis.Redis()
     r.mset({
-        "check:" + result[0] + ".status": json.dumps({
+        result[0]: json.dumps({
             "status": result[2][0],
             "status_text": result[2][1],
             "problems": result[2][2],
@@ -100,12 +100,82 @@ def run_checks():
 
 
 @task()
-def run_check(uuid, url):
+def run_check(redis_key, url):
     # Run
     parsed_url = urlparse(url)
     run_time = timezone.now().isoformat()
     if parsed_url.scheme in handlers:
-        return uuid, run_time, handlers[parsed_url.scheme](url)
+        return redis_key, run_time, handlers[parsed_url.scheme](url)
     else:
         error_text = "Unrecognised URL scheme: " + parsed_url.scheme
-        return uuid, run_time, ("unknown", error_text, [error_text], [], [])
+        return redis_key, run_time, ("unknown", error_text, [error_text], [], [])
+
+
+@task()
+def update():
+    # Get check list
+    checks = models.Check.objects.all()
+
+    # Check if there are any checks
+    if len(checks) == 0:
+        return
+
+    # Date and time
+    time = timezone.now()
+    date = time.date()
+
+    # Take a snapshot of all the current states
+    r = redis.Redis()
+    check_statuses = r.mget([check.redis_key for check in checks])
+
+    # Loop through checks
+    for check, check_status in zip(checks, check_statuses):
+        # Parse json for check_status
+        if check_status:
+            check_status = json.loads(check_status)
+
+    # Reports
+        # Get todays report
+        report, report_created = models.CheckDailyReport.objects.get_or_create(check=check, date=date)
+
+        # Add maintenance mode
+        if check.maintenance_mode:
+            report.maintenance_mode += 1
+
+        # Add current status
+        if not check.enabled:
+            report.status_disabled += 1
+        else:
+            if not check_status:
+                report.status_unknown += 1
+            else:
+                if check_status["status"] == "ok":
+                    report.status_ok += 1
+                elif check_status["status"] == "warning":
+                    report.status_warning += 1
+                elif check_status["status"] == "critical":
+                    report.status_critical += 1
+                elif check_status["status"] == "unknown":
+                    report.status_unknown += 1
+
+        # Save report
+        report.save()
+
+    # Problems
+        if check_status and check.enabled and not check.maintenance_mode:
+            # Get a list of problems that are not resolved
+            unresolved_problems = check_status["problems"] + check_status["masked_problems"]
+
+            # All problems that are not in unresolved_problems list are resolved
+            check.problem_set.filter(end_time=None).exclude(name__in=unresolved_problems).update(end_time=time, send_up_email=True)
+
+            # Add any new problems to the list
+            for problem in check_status["problems"]:
+                models.Problem.objects.get_or_create(check=check, name=problem, end_time=None, defaults=dict(start_time=time))
+
+         # If disabled or in maintenance mode, mark all problems as resolved but dont send up emails
+        if not check.enabled or check.maintenance_mode:
+            check.problem_set.filter(end_time=None).update(end_time=time)
+
+    # Metrics
+        # TODO

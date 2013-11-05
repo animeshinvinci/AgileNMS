@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load humanize %}
+{% load check_tags %}
 
 {% block title %}Check: {{ check }}{% endblock %}
 
@@ -10,23 +10,13 @@
 {% endblock %}
 
 {% block content %}
- <h3 class="pull-right" style="margin-top: 20px;">
-  <a href="{{ check.get_absolute_url }}update/" class="label label-primary"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
-  <a href="{{ check.get_absolute_url }}delete/" class="label label-danger"><span class="glyphicon glyphicon-remove"></span> Delete</a>
- </h3>
- 
- <h3>Check: {{ check }} <sup><span class="label status-label-{{ check.get_status }}" style="text-transform: uppercase;">{{ check.get_status }}</span></sup></h3>
- <p>URL: {{ check.url }}</p>
-  
- <h4 style="padding-top: 20px;">Status</h4>
- {% with check.get_last_result as result %}
-  {% if result %}
-   Current status: <span class="status-text-{{ result.status }}" style="text-transform: uppercase; font-weight: bold;">{{ result.status }}</span><br>
-   Info: {{ result.status_text }}<br>
-   Last checked: {{ result.time|naturaltime }}
-  {% else %}
-   No results have been collected yet.
-  {% endif %}
- {% endwith %}
+ {% with check.status as status %}
+  <h3 class="pull-right" style="margin-top: 20px;">
+   <a href="{{ check.get_absolute_url }}update/" class="label label-primary"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+   <a href="{{ check.get_absolute_url }}delete/" class="label label-danger"><span class="glyphicon glyphicon-remove"></span> Delete</a>
+  </h3>
 
+  <h3>Check: {{ check }} <sup><span class="label status-label-{% status_name check status %}" style="text-transform: uppercase;">{% status_name check status %}</span></sup></h3>
+  <p>URL: {{ check.url }}</p>
+ {% endwith %}
 {% endblock %}

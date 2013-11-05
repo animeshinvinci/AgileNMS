@@ -129,6 +129,10 @@ if not DEBUG:
             "task": "monitoring.tasks.run_checks",
             "schedule": timedelta(minutes=5),
         },
+        "update-every-minute": {
+            "task": "monitoring.tasks.update",
+            "schedule": timedelta(minutes=1),
+        }
     }
 else:
     MONITORING_CHECKRUNNER_TIMEOUT = 4
@@ -137,4 +141,8 @@ else:
             "task": "monitoring.tasks.run_checks",
             "schedule": timedelta(seconds=5),
         },
+        "update-every-minute": {
+            "task": "monitoring.tasks.update",
+            "schedule": timedelta(seconds=1),
+        }
     }

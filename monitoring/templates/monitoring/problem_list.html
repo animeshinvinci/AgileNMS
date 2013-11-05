@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load humanize %}
 
 {% block title %}Problem List{% endblock %}
 
@@ -34,13 +33,13 @@
        <a href="{{ problem.get_absolute_url }}">{{ problem }}</a>
       </td>
       <td style="text-transform: uppercase"><b>
-       <span class="problem-status-text-{{ problem.get_status }}">{{ problem.get_status }}</span>
+       <span class="problem-status-text-{{ problem.status }}">{{ problem.status }}</span>
       </b></td>
       <td>
-       {{ problem.start_time|naturaltime }}
+       {{ problem.start_time }}
       </td>
       <td>
-       {{ problem.end_time|naturaltime }}
+      {{ problem.end_time }}
       </td>
      </tr>
     {% endfor %}

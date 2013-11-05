@@ -42,7 +42,7 @@ class GroupCreateView(CreateView):
     form_class = forms.GroupForm
 
 
-class GroupUpdateView(CreateView):
+class GroupUpdateView(UpdateView):
     model = models.Group
     form_class = forms.GroupForm
 
