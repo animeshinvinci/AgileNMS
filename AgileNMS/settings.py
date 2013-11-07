@@ -11,13 +11,9 @@ TEMPLATE_DEBUG = DEBUG
 ADMINS = ( )
 MANAGERS = ADMINS
 
-#DATABASE
+# DATABASE
 import dj_database_url
-DATABASES = { "default": dj_database_url.config(default = "sqlite:///db/test.db") }
-
-# HOSTNAME AND ALLOWED_HOSTS
-#HOSTNAME = "nms.agilenetworking.co.uk"
-#ALLOWED_HOSTS = [HOSTNAME]
+DATABASES = { "default": dj_database_url.config(default="sqlite:///db/test.db") }
 
 # LOCATION
 TIME_ZONE = "Europe/London"
@@ -118,35 +114,13 @@ LOGGING = {
 # CELERY
 import djcelery
 djcelery.setup_loader()
-CELERY_ALWAYS_EAGER = DEBUG
 
-from datetime import timedelta
-
-if not DEBUG:
-    MONITORING_CHECKRUNNER_TIMEOUT = 120
-    CELERYBEAT_SCHEDULE = {
-        "run-checks-every-5-minutes": {
-            "task": "monitoring.tasks.run_checks",
-            "schedule": timedelta(minutes=5),
-        },
-        "update-every-minute": {
-            "task": "monitoring.tasks.update",
-            "schedule": timedelta(minutes=1),
-        }
-        "send-notifications-every-minute": {
-            "task": "monitoring.tasks.send_notifications",
-            "schedule": timedelta(minutes=1),
-        }
-    }
-else:
-    MONITORING_CHECKRUNNER_TIMEOUT = 4
-    CELERYBEAT_SCHEDULE = {
-        "run-checks-every-5-minutes": {
-            "task": "monitoring.tasks.run_checks",
-            "schedule": timedelta(seconds=5),
-        },
-        "update-every-minute": {
-            "task": "monitoring.tasks.update",
-            "schedule": timedelta(seconds=1),
-        }
-    }
+# LOCAL SETTINGS
+EXTRA_INSTALLED_APPS = tuple()
+EXTRA_MIDDLEWARE_CLASSES = tuple()
+try:
+    from .local_settings import *
+except ImportError:
+    from .local_settings_devexample import *
+INSTALLED_APPS += EXTRA_INSTALLED_APPS
+MIDDLEWARE_CLASSES += EXTRA_MIDDLEWARE_CLASSES
