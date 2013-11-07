@@ -107,8 +107,8 @@ def run_check(redis_key, url):
     if parsed_url.scheme in handlers:
         return redis_key, run_time, handlers[parsed_url.scheme](url)
     else:
-        error_text = "Unrecognised URL scheme: " + parsed_url.scheme
-        return redis_key, run_time, ("unknown", error_text, [error_text], [], [])
+        error_text = "Unrecognised URL scheme" + parsed_url.scheme
+        return redis_key, run_time, ("unknown", error_text, ["Unrecognised URL scheme"], [], [])
 
 
 @task()

@@ -43,18 +43,18 @@ class Group(models.Model):
 
         # Check if there are any checks
         if len(checks) == 0:
-            return
+            return []
 
-        # Get list of statuses from redis
+        # Get list of statuses from redis and convert to python
+        status_list = []
         r = redis.Redis()
-        status_list = r.mget([check.redis_key for check in checks])
-
-        # Load json
-        status_list = [json.loads(status) for status in status_list]
-
-        # Convert to python times
-        for status in status_list:
-            status["time"] = dateutil.parser.parse(status["time"])
+        for status in r.mget([check.redis_key for check in checks]):
+            if status:
+                status_py = json.loads(status)
+                status_py["time"] = dateutil.parser.parse(status_py["time"])
+                status_list.append(status_py)
+            else:
+                status_list.append(None)
 
         # Zip with checks and return
         return [{"check": status[0], "status": status[1]} for status in zip(checks, status_list)]
@@ -76,7 +76,7 @@ class Check(models.Model):
 
     @property
     def redis_key(self):
-        return ":".join(["check", self.url, "status"])
+        return "check_status:" + self.url
 
     @property
     def status(self):
