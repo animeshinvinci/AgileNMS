@@ -1,6 +1,7 @@
 from urlparse import urlparse
 from django.utils import timezone
 from django.conf import settings
+from django.db.models import F
 import logging
 from celery import task, group
 import models
@@ -126,37 +127,42 @@ def update():
 
     # Take a snapshot of all the current states
     r = redis.Redis()
-    check_statuses = r.mget([check.redis_key for check in checks])
+    check_statuses = zip(checks, r.mget([check.redis_key for check in checks]))
 
     # Loop through checks
-    for check, check_status in zip(checks, check_statuses):
+    for check, check_status in check_statuses:
         # Parse json for check_status
         if check_status:
             check_status = json.loads(check_status)
 
     # Reports
         # Get todays report
-        report, report_created = models.CheckDailyReport.objects.get_or_create(check=check, date=date)
+        try:
+            report = models.CheckDailyReport.objects.get(check=check, date=date)
+        except models.CheckDailyReport.DoesNotExist:
+            report = moels.CheckDailyReport()
+            report.check = check
+            report.date = date
 
         # Add maintenance mode
         if check.maintenance_mode:
-            report.maintenance_mode += 1
+            report.maintenance_mode = F("maintenance_mode") + 1
 
         # Add current status
         if not check.enabled:
-            report.status_disabled += 1
+            report.status_disabled = F("status_disabled") + 1
         else:
             if not check_status:
-                report.status_unknown += 1
+                report.status_unknown = F("status_unknown") + 1
             else:
                 if check_status["status"] == "ok":
-                    report.status_ok += 1
+                    report.status_ok = F("status_ok") + 1
                 elif check_status["status"] == "warning":
-                    report.status_warning += 1
+                    report.status_warning = F("status_warning") + 1
                 elif check_status["status"] == "critical":
-                    report.status_critical += 1
+                    report.status_critical = F("status_critical") + 1
                 elif check_status["status"] == "unknown":
-                    report.status_unknown += 1
+                    report.status_unknown = F("status_unknown") + 1
 
         # Save report
         report.save()
