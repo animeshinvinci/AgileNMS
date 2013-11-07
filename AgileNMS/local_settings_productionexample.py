@@ -34,9 +34,9 @@ CELERYBEAT_SCHEDULE = {
     "update-every-minute": {
         "task": "monitoring.tasks.update",
         "schedule": timedelta(minutes=1),
-    }
+    },
     "send-notifications-every-minute": {
         "task": "monitoring.tasks.send_notifications",
         "schedule": timedelta(minutes=1),
-    }
+    },
 }

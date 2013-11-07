@@ -19,7 +19,7 @@ CELERYBEAT_SCHEDULE = {
 }
 
 # Devserver and debug toolbar
-EXTRA_INSTALLED_APPS =  ("devserver", "debug_toolbar")
+EXTRA_INSTALLED_APPS = ("devserver", "debug_toolbar")
 EXTRA_MIDDLEWARE_CLASSES = (
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 )
