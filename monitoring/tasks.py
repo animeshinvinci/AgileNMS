@@ -139,12 +139,7 @@ def update():
 
     # Reports
         # Get todays report
-        try:
-            report = models.CheckDailyReport.objects.get(check=check, date=date)
-        except models.CheckDailyReport.DoesNotExist:
-            report = moels.CheckDailyReport()
-            report.check = check
-            report.date = date
+        report, report_created = models.CheckDailyReport.objects.get_or_create(check=check, date=date)
 
         # Add maintenance mode
         if check.maintenance_mode:
