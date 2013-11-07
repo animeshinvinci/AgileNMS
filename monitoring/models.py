@@ -68,7 +68,7 @@ class Group(models.Model):
 
     @property
     def notification_addresses_list(self):
-        return (,)
+        return tuple(email for email in self.notification_addresses.split("\n"))
 
     def get_absolute_url(self):
         return "".join(["/checks/groups/", self.slug, "/"])
@@ -102,7 +102,8 @@ class Check(models.Model):
 
     @property
     def notification_addresses_list(self):
-        return self.group.notification_addresses_list + (,)
+        emails = tuple(email for email in self.notification_addresses.split("\n"))
+        return self.group.notification_addresses_list + emails
 
     def get_absolute_url(self):
         return "".join(["/checks/", str(self.id), "/"])
