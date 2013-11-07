@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.template.defaultfilters import slugify
+from django.core.validators import validate_email
 from dateutil.relativedelta import relativedelta
 import dateutil.parser
 import datetime
@@ -26,10 +27,16 @@ REPORT_SCHEDULE_CHOICES = (
 )
 
 
+def validate_email_list(email_list):
+    emails = email_list.split("\n")
+    for email in emails:
+        validate_email(email)
+
+
 class Group(models.Model):
     slug = models.CharField(max_length=200, primary_key=True)
     name = models.CharField(max_length=200)
-    notification_addresses = models.TextField(blank=True)
+    notification_addresses = models.TextField(blank=True, validators=[validate_email_list])
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -59,6 +66,10 @@ class Group(models.Model):
         # Zip with checks and return
         return [{"check": status[0], "status": status[1]} for status in zip(checks, status_list)]
 
+    @property
+    def notification_addresses_list(self):
+        return (,)
+
     def get_absolute_url(self):
         return "".join(["/checks/groups/", self.slug, "/"])
 
@@ -68,9 +79,9 @@ class Group(models.Model):
 
 class Check(models.Model):
     name = models.CharField(max_length=100)
-    group = models.ForeignKey(Group)
+    group = models.ForeignKey(Group, db_index=True)
     url = models.CharField("URL", max_length=300)
-    notification_addresses = models.TextField(blank=True)
+    notification_addresses = models.TextField(blank=True, validators=[validate_email_list])
     enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
 
@@ -89,6 +100,10 @@ class Check(models.Model):
         else:
             return None
 
+    @property
+    def notification_addresses_list(self):
+        return self.group.notification_addresses_list + (,)
+
     def get_absolute_url(self):
         return "".join(["/checks/", str(self.id), "/"])
 
@@ -99,8 +114,8 @@ class Check(models.Model):
 
 
 class CheckDailyReport(models.Model):
-    check = models.ForeignKey(Check)
-    date = models.DateField()
+    check = models.ForeignKey(Check, db_index=True, unique_for_date="date")
+    date = models.DateField(db_index=True)
     update_count = models.IntegerField(default=0)
     status_ok = models.IntegerField(default=0)
     status_warning = models.IntegerField(default=0)
@@ -109,16 +124,11 @@ class CheckDailyReport(models.Model):
     status_disabled = models.IntegerField(default=0)
     maintenance_mode = models.IntegerField(default=0)
 
-    class Meta:
-        unique_together = (
-            ("check", "date"),
-        )
-
 
 class Problem(models.Model):
-    check = models.ForeignKey(Check)
+    check = models.ForeignKey(Check, db_index=True)
     name = models.CharField(max_length=100)
-    start_time = models.DateTimeField()
+    start_time = models.DateTimeField(db_index=True)
     end_time = models.DateTimeField(null=True)
     acknowledged = models.BooleanField(default=False)
     send_down_email = models.BooleanField(default=True)
@@ -131,6 +141,10 @@ class Problem(models.Model):
         if self.acknowledged:
             return "acknowledged"
         return "unhandled"
+
+    @property
+    def notification_addresses_list(self):
+        return self.check.notification_addresses_list
 
     def get_absolute_url(self):
         return "".join(["/problems/", str(self.id), "/"])
@@ -156,7 +170,7 @@ class Report(models.Model):
     start_date = models.DateField(default=datetime.date.today)
     
     # Notification addresses
-    notification_addresses = models.TextField(blank=True)
+    notification_addresses = models.TextField(blank=True, validators=[validate_email_list])
 
     def decode_schedule(self):
         # Split schedule into unit and value

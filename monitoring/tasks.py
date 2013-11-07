@@ -2,6 +2,8 @@ from urlparse import urlparse
 from django.utils import timezone
 from django.conf import settings
 from django.db.models import F
+from django.template.loader import get_template
+from django.core.mail import send_mass_mail
 import logging
 from celery import task, group
 import models
@@ -185,3 +187,47 @@ def update():
 
     # Metrics
         # TODO
+
+
+@task
+def send_notifications():
+    emails_list = []
+    email_from = "support@agilenetworking.co.uk"
+
+# Problems
+    # Up
+    up_problems = models.Problem.objects.filter(send_up_email=True)
+    problem_up_template = get_template("monitoring/emails/problem_up.txt")
+    for problem in up_problems:
+        # Check if there are any email addresses to send to
+        addresses = problem.notification_addresses_list
+        if len(addresses) > 0:
+            # Send email
+            email_to = addresses
+            email_subject = "".join(["[AgileNMS] INFO: " , problem.check, " no longer has a '" + problem.name + "'"])
+            email_message = problem_up_template.render({"problem": problem})
+            emails_list.append((email_subject, email_message, email_from, email_to))
+
+        # Clear send_up_email flag
+        problem.send_up_email = False
+        problem.save()
+
+    # Down
+    down_problems = models.Problem.objects.filter(send_down_email=True)
+    problem_down_template = get_template("monitoring/emails/problem_down.txt")
+    for problem in up_problems:
+        # Check if there are any email addresses to send to
+        addresses = problem.notification_addresses_list
+        if len(addresses) > 0:
+            # Send email
+            email_to = addresses
+            email_subject = "".join(["[AgileNMS] ERROR: " , problem.check, " has a '" + problem.name + "'"])
+            email_message = problem_down_template.render({"problem": problem}),
+            emails_list.append((email_subject, email_message, email_from, email_to))
+
+        # Clear send_down_email flag
+        problem.send_down_email = False
+        problem.save()
+
+# Send emails
+    send_mass_mail(tuple(emails_list))
