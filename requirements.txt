@@ -12,6 +12,7 @@ django-bootstrap-form==3.0
 django-celery==3.0.23
 django-debug-toolbar==0.10.2
 django-devserver==0.7.0
+gunicorn==18.0
 kombu==2.5.14
 python-dateutil==2.1
 pytz==2013d
