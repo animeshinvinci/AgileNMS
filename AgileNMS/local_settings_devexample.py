@@ -10,10 +10,10 @@ CELERYBEAT_SCHEDULE = {
         "task": "monitoring.tasks.run_checks",
         "schedule": timedelta(seconds=5),
     },
- #   "update-every-minute": {
- #       "task": "monitoring.tasks.update",
- #       "schedule": timedelta(seconds=1),
- #   }
+    "update-every-minute": {
+        "task": "monitoring.tasks.update",
+        "schedule": timedelta(seconds=1),
+    }
 }
 
 # Devserver and debug toolbar
