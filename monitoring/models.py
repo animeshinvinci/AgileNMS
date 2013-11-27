@@ -71,7 +71,6 @@ class Check(models.Model):
         r = redis.StrictRedis()
         status_json = r.get(self.redis_key)
         if status_json:
-            print status_json
             status = json.loads(status_json)
             status["time"] = dateutil.parser.parse(status["time"])
             return status
