@@ -1,8 +1,7 @@
 from urlparse import urlparse
 from django.utils import timezone
 from django.conf import settings
-from django.template.loader import get_template
-from django.template import Context
+from django.template.loader import render_to_string
 from django.core.mail import send_mass_mail
 import logging
 from celery import task, group
@@ -232,15 +231,14 @@ def send_notifications():
 # Problems
     # Up
     up_problems = models.Problem.objects.filter(send_up_email=True)
-    problem_up_template = get_template('monitoring/emails/problem_up.txt')
     for problem in up_problems:
         # Check if there are any email addresses to send to
         addresses = problem.notification_addresses_list
         if len(addresses) > 0:
             # Send email
             email_to = addresses
-            email_subject = "".join(["[AgileNMS] INFO: " , str(problem.check), " no longer has a '" + problem.name + "'"])
-            email_message = problem_up_template.render(Context({'problem': problem}))
+            email_subject = "".join(["[AgileNMS] INFO: " , str(problem.check), " no longer has a problem '" + problem.name + "'"])
+            email_message = render_to_string('monitoring/emails/problem_up.txt', {'problem': problem})
             emails_list.append((email_subject, email_message, email_from, email_to))
 
         # Clear send_up_email flag
@@ -249,15 +247,14 @@ def send_notifications():
 
     # Down
     down_problems = models.Problem.objects.filter(send_down_email=True)
-    problem_down_template = get_template('monitoring/emails/problem_down.txt')
-    for problem in up_problems:
+    for problem in down_problems:
         # Check if there are any email addresses to send to
         addresses = problem.notification_addresses_list
         if len(addresses) > 0:
             # Send email
             email_to = addresses
-            email_subject = "".join(["[AgileNMS] ERROR: " , str(problem.check), " has a '" + problem.name + "'"])
-            email_message = problem_down_template.render(Context({'problem': problem})),
+            email_subject = "".join(["[AgileNMS] ERROR: " , str(problem.check), " has a problem '" + problem.name + "'"])
+            email_message = render_to_string('monitoring/emails/problem_down.txt', {'problem': problem})
             emails_list.append((email_subject, email_message, email_from, email_to))
 
         # Clear send_down_email flag
@@ -266,5 +263,5 @@ def send_notifications():
 
     print tuple(emails_list)
 
-# Send emails
+    # Send emails
     send_mass_mail(tuple(emails_list))
