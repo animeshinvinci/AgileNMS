@@ -30,7 +30,7 @@ REPORT_SCHEDULE_CHOICES = (
 def validate_email_list(email_list):
     emails = email_list.split("\n")
     for email in emails:
-        validate_email(email)
+        validate_email(email.strip())
 
 
 class Group(models.Model):
