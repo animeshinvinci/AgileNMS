@@ -44,29 +44,6 @@ class Group(models.Model):
         super(Group, self).save(*args, **kwargs)
 
     @property
-    def status_list(self):
-        # Get list of checks
-        checks = list(self.check_set.all())
-
-        # Check if there are any checks
-        if len(checks) == 0:
-            return []
-
-        # Get list of statuses from redis and convert to python
-        status_list = []
-        r = redis.Redis()
-        for status in r.mget([check.redis_key for check in checks]):
-            if status:
-                status_py = json.loads(status)
-                status_py["time"] = dateutil.parser.parse(status_py["time"])
-                status_list.append(status_py)
-            else:
-                status_list.append(None)
-
-        # Zip with checks and return
-        return [{"check": status[0], "status": status[1]} for status in zip(checks, status_list)]
-
-    @property
     def notification_addresses_list(self):
         return tuple(email for email in self.notification_addresses.split("\n"))
 
@@ -91,9 +68,10 @@ class Check(models.Model):
 
     @property
     def status(self):
-        r = redis.Redis()
+        r = redis.StrictRedis()
         status_json = r.get(self.redis_key)
         if status_json:
+            print status_json
             status = json.loads(status_json)
             status["time"] = dateutil.parser.parse(status["time"])
             return status

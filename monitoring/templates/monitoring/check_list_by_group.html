@@ -30,62 +30,58 @@
 
  <h3>Checks</h3>
  {% for group in group_list %}
-  {% with group.status_list as status_list %}
-   <div style="padding-left: 20px;">
+  <div style="padding-left: 20px;">
     <h4>{{ group }} <sup><a href="{{ group.get_absolute_url }}">Info</a></sup></h4>
-     {% for check_status in status_list %}
-      {% with check_status.check as check %}
-      {% with check_status.status as status %}
-       {% if forloop.first %}
-        <table class="table table-striped">
-         <thead>
-          <tr>
-           <th style="width: 40%">Name</th>
-           <th style="width: 10%">Status</th>
-           <th style="width: 25%">Info</th>
-           <th style="width: 25%">Last checked</th>
-          </tr>
-         </thead>
-        <tbody>
-       {% endif %}
-       <tr>
-        <td>
-         <a href="{{ check.get_absolute_url }}">{{ check }}</a>
-        </td>
-        <td style="padding-top: 3px;">
-         {% if check.enabled %}
-          {% if status %}
-           <h4 style="margin: 0;"><span class="label status-label-{{ status.status }}" style="text-transform: uppercase">{{ status.status }}</span></h4>
-          {% else %}
-           <h4 style="margin: 0;"><span class="label status-label-unknown" style="text-transform: uppercase">unknown</span></h4>
-          {% endif %}
+    {% for check in group.check_set.all %}
+     {% with check.status as status %}
+      {% if forloop.first %}
+       <table class="table table-striped">
+        <thead>
+         <tr>
+          <th style="width: 40%">Name</th>
+          <th style="width: 10%">Status</th>
+          <th style="width: 25%">Info</th>
+          <th style="width: 25%">Last checked</th>
+         </tr>
+        </thead>
+       <tbody>
+      {% endif %}
+      <tr>
+       <td>
+        <a href="{{ check.get_absolute_url }}">{{ check }}</a>
+       </td>
+       <td style="padding-top: 3px;">
+        {% if check.enabled %}
+         {% if status %}
+          <h4 style="margin: 0;"><span class="label status-label-{{ status.status }}" style="text-transform: uppercase">{{ status.status }}</span></h4>
          {% else %}
-          <h4 style="margin: 0;"><span class="label status-label-disabled" style="text-transform: uppercase">disabled</span></h4>
+          <h4 style="margin: 0;"><span class="label status-label-unknown" style="text-transform: uppercase">unknown</span></h4>
          {% endif %}
-        </td>
-        {% if check.enabled and status %}
-         <td>
-          {{ status.status_text }}
-         </td>
-         <td>
-          {{ status.time }}
-         </td>
         {% else %}
-         <td>N/A</td>
-         <td>N/A</td>
+         <h4 style="margin: 0;"><span class="label status-label-disabled" style="text-transform: uppercase">disabled</span></h4>
         {% endif %}
-       </tr>
-       {% if forloop.last %}
-        </tbody>
-        </table>
+       </td>
+       {% if check.enabled and status %}
+        <td>
+         {{ status.status_text }}
+        </td>
+        <td>
+         {{ status.time }}
+        </td>
+       {% else %}
+        <td>N/A</td>
+        <td>N/A</td>
        {% endif %}
-      {% endwith %}
-      {% endwith %}
-     {% empty %}
-     <p>There are no checks in this group</p>
-    {% endfor %}
-   </div>
-   {% if not forloop.last %}<hr>{% endif %}
-  {% endwith %}
+      </tr>
+      {% if forloop.last %}
+       </tbody>
+       </table>
+      {% endif %}
+     {% endwith %}
+    {% empty %}
+    <p>There are no checks in this group</p>
+   {% endfor %}
+  </div>
+  {% if not forloop.last %}<hr>{% endif %}
  {% endfor %}
 {% endblock %}
