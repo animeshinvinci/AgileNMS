@@ -5,17 +5,15 @@
 CELERY_ALWAYS_EAGER = True
 
 from datetime import timedelta
-
-MONITORING_CHECKRUNNER_TIMEOUT = 4
 CELERYBEAT_SCHEDULE = {
     "run-checks-every-5-minutes": {
         "task": "monitoring.tasks.run_checks",
         "schedule": timedelta(seconds=5),
     },
-    "update-every-minute": {
-        "task": "monitoring.tasks.update",
-        "schedule": timedelta(seconds=1),
-    }
+ #   "update-every-minute": {
+ #       "task": "monitoring.tasks.update",
+ #       "schedule": timedelta(seconds=1),
+ #   }
 }
 
 # Devserver and debug toolbar
