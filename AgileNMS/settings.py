@@ -122,7 +122,6 @@ CACHES = {
     },
 }
 
-
 # CELERY
 import djcelery
 djcelery.setup_loader()
