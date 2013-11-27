@@ -25,7 +25,6 @@ ALLOWED_HOSTS = [HOSTNAME]
 # CELERY
 from datetime import timedelta
 
-MONITORING_CHECKRUNNER_TIMEOUT = 120
 CELERYBEAT_SCHEDULE = {
     "run-checks-every-5-minutes": {
         "task": "monitoring.tasks.run_checks",
