@@ -226,7 +226,7 @@ def update():
 @task()
 def send_notifications():
     emails_list = []
-    email_from = 'support@agilenetworking.co.uk'
+    email_from = 'ANS Support <support@agilenetworking.co.uk>'
 
 # Problems
     # Up
